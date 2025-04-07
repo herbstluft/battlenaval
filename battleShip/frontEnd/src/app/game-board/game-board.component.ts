@@ -19,6 +19,7 @@ interface Cell {
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.css']
 })
+// Add these properties to the class
 export class GameBoardComponent implements OnInit, OnDestroy {
 
   private ReadChangeTurnSubscription: Subscription = new Subscription();
@@ -27,6 +28,13 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   boardSize = 8;
   myBoard: Cell[][] = [];
   opponentBoard: Cell[][] = [];
+  isGameOver = false; // Add this property
+  gameStats = {
+    totalShots: 0,
+    hits: 0,
+    misses: 0,
+    winner: ''
+  };
 
   gameId!: number;
   currentTurn!: string; // 'me' or 'opponent'
@@ -74,6 +82,79 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }
     return board;
   }
+
+  // Modify the attackCell method
+  attackCell(row: number, col: number): void {
+    if (this.currentTurn !== 'me' || this.isGameOver) {
+      this.message = 'No es tu turno';
+      return;
+    }
+  
+    if (this.opponentBoard[row][col].isHit || this.opponentBoard[row][col].isMiss) {
+      this.message = 'Ya atacaste esta celda';
+      return;
+    }
+  
+    console.log(`Attacking position: row ${row}, col ${col}`);
+    
+    this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
+      row: row,
+      col: col,
+      playerId: this.playerId,
+      gameId: this.gameId
+    }, {
+      headers: { Authorization: `Bearer ${this.token}` }
+    }).subscribe({
+      next: (response) => {
+        console.log('Attack response:', response);
+        
+        const hasShip = this.opponentBoard[row][col].hasShip;
+        
+        if (hasShip) {
+          this.message = '¡Le diste a un barco! 🎯';
+          this.opponentBoard[row][col].isHit = true;
+          this.opponentBoard[row][col].hasShip = true;
+          this.gameStats.hits++;
+        } else {
+          this.message = 'Agua... 💦';
+          this.opponentBoard[row][col].isMiss = true;
+          this.gameStats.misses++;
+        }
+        
+        this.gameStats.totalShots++;
+        this.checkGameOver();
+      },
+      error: (err) => {
+        console.error('Error al atacar:', err);
+        this.message = err.error?.message || 'Error en el ataque';
+      }
+    });
+  }
+
+  // Add this new method to check for game completion
+  private checkGameOver(): void {
+    let totalShips = 0;
+    let hitShips = 0;
+
+    for (let i = 0; i < this.boardSize; i++) {
+      for (let j = 0; j < this.boardSize; j++) {
+        if (this.opponentBoard[i][j].hasShip) {
+          totalShips++;
+          if (this.opponentBoard[i][j].isHit) {
+            hitShips++;
+          }
+        }
+      }
+    }
+
+    if (totalShips > 0 && totalShips === hitShips) {
+      this.isGameOver = true;
+      this.gameStats.winner = 'Tú';
+      this.message = '¡Felicitaciones! Has ganado el juego! 🎉';
+    }
+  }
+
+  // Modify updateBoards to check for game over when receiving updates
   private updateBoards(gameData: any): void {
     if (!gameData) {
       console.error('Game data is undefined');
@@ -105,52 +186,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Remove the duplicate attackCell method and keep only this one
-  attackCell(row: number, col: number): void {
-    if (this.currentTurn !== 'me') {
-      this.message = 'No es tu turno';
-      return;
-    }
-  
-    if (this.opponentBoard[row][col].isHit || this.opponentBoard[row][col].isMiss) {
-      this.message = 'Ya atacaste esta celda';
-      return;
-    }
-  
-    console.log(`Attacking position: row ${row}, col ${col}`);
-    
-    this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
-      row: row,
-      col: col,
-      playerId: this.playerId,
-      gameId: this.gameId
-    }, {
-      headers: { Authorization: `Bearer ${this.token}` }
-    }).subscribe({
-      next: (response) => {
-        console.log('Attack response:', response);
-        
-        // Check if the cell has a ship before updating
-        const hasShip = this.opponentBoard[row][col].hasShip;
-        
-        // Update based on whether there's actually a ship there
-        if (hasShip) {
-          this.message = '¡Le diste a un barco! 🎯';
-          this.opponentBoard[row][col].isHit = true;
-          this.opponentBoard[row][col].hasShip = true;
-        } else {
-          this.message = 'Agua... 💦';
-          this.opponentBoard[row][col].isMiss = true;
-        }
-        
-        // The complete board update will come through Pusher
-      },
-      error: (err) => {
-        console.error('Error al atacar:', err);
-        this.message = err.error?.message || 'Error en el ataque';
-      }
-    });
-  }
+
 
   // Add the subscription method as a private method
   private subscribeToGameReadChangeTurn(): void {

@@ -30,8 +30,18 @@
   
 
   <div class="turn-status">
-    <p>{{ currentTurn === 'me' ? 'Es tu turno' : 'Es el turno del oponente' }}</p>
+    <p *ngIf="!isGameOver">{{ currentTurn === 'me' ? 'Es tu turno' : 'Es el turno del oponente' }}</p>
   </div>
 
   <div *ngIf="message" class="message">{{ message }}</div>
+
+  <!-- Add game statistics -->
+  <div class="game-stats" *ngIf="isGameOver">
+    <h3>Estadísticas del Juego</h3>
+    <p>Ganador: {{ gameStats.winner }}</p>
+    <p>Total de disparos: {{ gameStats.totalShots }}</p>
+    <p>Aciertos: {{ gameStats.hits }}</p>
+    <p>Fallos: {{ gameStats.misses }}</p>
+    <p>Precisión: {{ gameStats.totalShots > 0 ? (gameStats.hits / gameStats.totalShots * 100).toFixed(1) : 0 }}%</p>
+  </div>
 </div>

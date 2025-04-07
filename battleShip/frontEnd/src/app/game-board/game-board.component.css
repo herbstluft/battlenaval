@@ -59,3 +59,21 @@
   content: '○';
   font-size: 20px;
 }
+
+.game-stats {
+  margin-top: 20px;
+  padding: 20px;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.game-stats h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.game-stats p {
+  margin: 8px 0;
+  color: #34495e;
+}
