@@ -41,8 +41,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     Route::post('/games', [GameController::class, 'create']);
     Route::post('/games/{game}/join', [GameController::class, 'join']);
     Route::post('/games/{game}/move', [GameController::class, 'makeMove']);
-    Route::get('/games/{game}', [GameController::class, 'status']);
-    Route::get('/games/{game}/status', [GameController::class, 'status']);
+    //Route::get('/games/{game}', [GameController::class, 'status']);
+    //Route::get('/games/{game}/status', [GameController::class, 'status']);
     Route::post('/games/{game}/board', [GameController::class, 'getBoard']);
+
+
+    Route::middleware('auth:sanctum')->get('/games/{gameId}', [GameController::class, 'getGameState']);
+Route::middleware('auth:sanctum')->post('/games/{gameId}/attack', [GameController::class, 'attackCell']);
 
     

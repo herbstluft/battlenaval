@@ -32,7 +32,7 @@ class GameController extends Controller
         $game = Game::create([
             'player1_id' => Auth::id(),
             'status' => 'waiting',
-            'player1_board' => $request->board,
+            'player1_board' => $this->initializeRandomBoard(),
             'player1_shots' => [],
             'player2_shots' => []
         ]);
@@ -52,6 +52,7 @@ class GameController extends Controller
 
         $game->update([
             'player2_id' => Auth::id(),
+            'player2_board' => $this->initializeRandomBoard(),
             'status' => 'in_progress',
             'current_turn' => $game->player1_id
         ]);
@@ -163,6 +164,128 @@ class GameController extends Controller
             'opponent_board_hits' => $processedOpponentBoard,
             'is_player_turn' => $game->current_turn === $userId,
             'game_status' => $game->status
+        ]);
+    }
+
+
+
+    private function initializeRandomBoard()
+    {
+        $board = [];
+        $shipsToPlace = 15; // Número total de barcos
+        
+        // Crear un tablero vacío de 8x8
+        for ($i = 0; $i < 8; $i++) {
+            for ($j = 0; $j < 8; $j++) {
+                $board[$i][$j] = [
+                    'hasShip' => false,
+                    'isHit' => false,
+                    'isMiss' => false
+                ];
+            }
+        }
+        
+        // Colocar barcos aleatoriamente
+        $shipsPlaced = 0;
+        while ($shipsPlaced < $shipsToPlace) {
+            $row = rand(0, 7);
+            $col = rand(0, 7);
+            
+            if (!$board[$row][$col]['hasShip']) {
+                $board[$row][$col]['hasShip'] = true;
+                $shipsPlaced++;
+            }
+        }
+        
+        return $board;
+    }
+
+
+    public function getGameState($gameId)
+    {
+        $game = Game::findOrFail($gameId);
+    
+        // Obtener los tableros de ambos jugadores
+        $player1Board = is_string($game->player1_board) ? json_decode($game->player1_board, true) : $game->player1_board;
+        $player2Board = is_string($game->player2_board) ? json_decode($game->player2_board, true) : $game->player2_board;
+    
+        // Si las celdas están en un solo array (cells), convertirlo en un array bidimensional de 8x8
+        $player1Board = $this->convertCellsToBoard($player1Board);
+        $player2Board = $this->convertCellsToBoard($player2Board);
+    
+        return response()->json([
+            'myBoard' => $game->current_turn === 'player1' ? $player1Board : $player2Board,
+            'opponentBoard' => $game->current_turn === 'player1' ? $player2Board : $player1Board,
+            'currentTurn' => $game->current_turn,
+            'player1_id' => $game->player1_id,  // Añade esto
+            'player2_id' => $game->player2_id   // Añade esto
+
+        ]);
+    }
+    
+    private function convertCellsToBoard($board)
+    {
+        // Si board tiene una propiedad 'cells', convertirla en un array de 8x8
+        if (isset($board['cells']) && is_array($board['cells'])) {
+            $cells = $board['cells'];
+            $boardArray = [];
+    
+            // Convertir el array de 100 celdas en un array 8x8
+            for ($i = 0; $i < 8; $i++) {
+                $boardArray[] = array_slice($cells, $i * 8, 8);
+            }
+    
+            // Reemplazar el array original de celdas por el nuevo array 8x8
+            return $boardArray;
+        }
+    
+        return $board;
+    }
+    
+    
+
+
+    public function attackCell(Request $request, $gameId)
+    {
+        $game = Game::findOrFail($gameId);
+
+        // Validar la entrada
+        $validated = $request->validate([
+            'row' => 'required|integer|min:0|max:7',
+            'col' => 'required|integer|min:0|max:7',
+        ]);
+
+        // Identificar quién está atacando
+        $attacker = $game->current_turn === 'player1' ? 'player1' : 'player2';
+        $opponent = $game->current_turn === 'player1' ? 'player2' : 'player1';
+
+        // Obtener el tablero del atacante y del oponente
+        $attackerBoard = $game->{$attacker . '_board'};
+        $opponentBoard = $game->{$opponent . '_board'};
+
+        // Revisar si la celda es un golpe
+        $hit = $opponentBoard[$validated['row']][$validated['col']]['hasShip'];
+
+        // Actualizar el tablero del oponente
+        $opponentBoard[$validated['row']][$validated['col']] = [
+            'hasShip' => false, // Marca la celda como vacía
+            'isHit' => $hit,    // Indica si fue un golpe
+            'isMiss' => !$hit  // Indica si fue un fallo
+        ];
+
+        // Actualizar el turno
+        $game->current_turn = $game->current_turn === 'player1' ? 'player2' : 'player1';
+
+        // Guardar el juego con los cambios en los tableros y turno
+        $game->update([
+            $attacker . '_board' => $attackerBoard,
+            $opponent . '_board' => $opponentBoard,
+        ]);
+
+        // Responder con el resultado del ataque
+        return response()->json([
+            'message' => $hit ? '¡Acertaste!' : 'Fallaste.',
+            'hit' => $hit
         ]);
     }
 }
