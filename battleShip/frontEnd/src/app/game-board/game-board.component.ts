@@ -1,12 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common'; // <-- importa esto
+import { CommonModule } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { PusherService } from '../pusher.service';
 import { Subscription } from 'rxjs';
-
-
 
 interface Cell {
   hasShip: boolean;
@@ -16,12 +14,12 @@ interface Cell {
 
 @Component({
   selector: 'app-game-board',
-  imports: [CommonModule], // <-- agrégalo aquí
-  templateUrl: './game-board.component.html',
-  styleUrls: ['./game-board.component.css'],
   standalone: true,
+  imports: [CommonModule],
+  templateUrl: './game-board.component.html',
+  styleUrls: ['./game-board.component.css']
 })
-export class GameBoardComponent implements OnInit {
+export class GameBoardComponent implements OnInit, OnDestroy {
 
   private ReadChangeTurnSubscription: Subscription = new Subscription();
 
@@ -42,7 +40,6 @@ export class GameBoardComponent implements OnInit {
 
   ngOnInit(): void {
     this.gameId = Number(this.route.snapshot.paramMap.get('id'));
-    this.initializeBoards();
     this.fetchPlayerId(); // Añade esta llamada
 
   }
@@ -56,7 +53,7 @@ export class GameBoardComponent implements OnInit {
       next: (user) => {
         this.playerId = user.id;
         this.subscribeToGameReadChangeTurn();
-
+          
         this.fetchGameState();  // Llamar a fetchGameState solo después de obtener el playerId
       },
       error: (err) => {
@@ -65,10 +62,7 @@ export class GameBoardComponent implements OnInit {
     });
   }
   
-  initializeBoards(): void {
-    this.myBoard = this.createEmptyBoard();
-    this.opponentBoard = this.createEmptyBoard();
-  }
+
 
   createEmptyBoard(): Cell[][] {
     const board: Cell[][] = [];
@@ -136,18 +130,16 @@ export class GameBoardComponent implements OnInit {
       next: (response) => {
         console.log('Attack response:', response);
         
-        // Show hit/miss message immediately
-        if (response.hit) {
+        // Check if the cell has a ship before updating
+        const hasShip = this.opponentBoard[row][col].hasShip;
+        
+        // Update based on whether there's actually a ship there
+        if (hasShip) {
           this.message = '¡Le diste a un barco! 🎯';
-        } else {
-          this.message = 'Agua... 💦';
-        }
-  
-        // Update the local board immediately for feedback
-        if (response.hit) {
           this.opponentBoard[row][col].isHit = true;
           this.opponentBoard[row][col].hasShip = true;
         } else {
+          this.message = 'Agua... 💦';
           this.opponentBoard[row][col].isMiss = true;
         }
         
@@ -183,7 +175,6 @@ export class GameBoardComponent implements OnInit {
         }
       );
   }
-
   private initializeBoardFromData(boardData: any[][] | undefined, isOpponentBoard = false): Cell[][] {
     if (!boardData || !Array.isArray(boardData)) {
       console.error('Board data is invalid:', boardData);
@@ -194,16 +185,16 @@ export class GameBoardComponent implements OnInit {
       return row.map((cell, j) => {
         if (!cell) return { hasShip: false, isHit: false, isMiss: false };
   
-        // For opponent's board, only show hits and misses
+        // Para el tablero del oponente, mostrar todo temporalmente
         if (isOpponentBoard) {
           return {
-            hasShip: cell.isHit ? cell.hasShip : false, // Only show ship if hit
+            hasShip: Boolean(cell.hasShip), // Ahora mostramos los barcos del oponente
             isHit: Boolean(cell.isHit),
             isMiss: Boolean(cell.isMiss)
           };
         }
         
-        // For my board, show everything
+        // Para mi tablero, mostrar todo
         return {
           hasShip: Boolean(cell.hasShip),
           isHit: Boolean(cell.isHit),
@@ -212,7 +203,6 @@ export class GameBoardComponent implements OnInit {
       });
     });
   }
-  
   // Remove or replace updateGameState with updateBoards
   fetchGameState(): void {
     this.http.get<any>(`${environment.apiUrl}/games/${this.gameId}`, {
@@ -227,5 +217,10 @@ export class GameBoardComponent implements OnInit {
       }
     });
   }
- 
+  
+  ngOnDestroy(): void {
+    if (this.ReadChangeTurnSubscription) {
+      this.ReadChangeTurnSubscription.unsubscribe();
+    }
+  }
 }

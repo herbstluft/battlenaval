@@ -20,8 +20,7 @@
       <div *ngFor="let cell of row; let j = index" class="cell"
            [ngClass]="{
              'hit': cell.isHit,
-             'miss': cell.isMiss,
-             'attacked': cell.isHit || cell.isMiss
+             'miss': cell.isMiss
            }"
            (click)="attackCell(i, j)">
         <span>{{ cell.isHit ? 'X' : (cell.isMiss ? 'O' : '') }}</span>
