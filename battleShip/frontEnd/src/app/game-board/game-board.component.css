@@ -2,78 +2,188 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h2 {
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
+  font-size: 2.2em;
+  font-weight: 600;
+  letter-spacing: 2px;
 }
 
 .board {
   display: grid;
   grid-template-rows: repeat(8, 1fr);
+  gap: 6px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 30px;
 }
 
 .row {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
 }
 
-
-/* Estilos existentes... */
-
 .cell {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #ccc;
+  width: 45px;
+  height: 45px;
+  border: 2px solid #334756;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  font-size: 1.3em;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Celda con barco (solo en tu tablero) */
+.cell:hover:not(.hit):not(.miss) {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(72, 198, 239, 0.4);
+  border-color: #48c6ef;
+}
+
 .cell.ship {
-  background-color: #3498db;
-}
-
-/* Celda atacada y golpeó barco */
-.cell.hit {
-  background-color: #e74c3c;
+  background: linear-gradient(45deg, #48c6ef, #6f86d6);
+  border-color: #48c6ef;
   color: white;
 }
 
-/* Celda atacada y falló */
+.cell.hit {
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  border-color: #ff416c;
+  color: white;
+  animation: hitEffect 0.5s ease;
+}
+
 .cell.miss {
-  background-color: #ecf0f1;
+  background: linear-gradient(45deg, #2c3e50, #3498db);
+  border-color: #3498db;
+  color: white;
+  animation: splashEffect 0.8s ease;
 }
 
-/* Celda en tablero oponente que ya fue atacada */
-.cell.attacked {
-  cursor: not-allowed;
+/* Explosion animation for hits */
+@keyframes hitEffect {
+  0% { transform: scale(1); }
+  50% { 
+    transform: scale(1.2);
+    box-shadow: 0 0 30px rgba(255, 65, 108, 0.6);
+  }
+  100% { transform: scale(1); }
 }
 
-/* Indicador visual para celdas atacadas */
+/* Water splash animation for misses */
+@keyframes splashEffect {
+  0% { transform: scale(1); }
+  30% { 
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+  }
+  100% { transform: scale(1); }
+}
+
 .cell.hit::after {
-  content: '✖';
-  font-size: 20px;
+  content: '💥';
+  position: absolute;
+  font-size: 1.5em;
+  animation: fadeInOut 0.5s ease;
 }
 
 .cell.miss::after {
-  content: '○';
-  font-size: 20px;
+  content: '💧';
+  position: absolute;
+  font-size: 1.5em;
+  animation: dropSplash 0.8s ease;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dropSplash {
+  0% { transform: translateY(-20px); opacity: 0; }
+  50% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.8; }
+}
+
+.turn-status {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 40px;
+  border-radius: 30px;
+  margin: 20px 0;
+  font-size: 1.3em;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.message {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 40px;
+  border-radius: 30px;
+  margin: 15px 0;
+  color: #ffffff;
+  font-weight: 500;
+  animation: messageAppear 0.3s ease;
+}
+
+@keyframes messageAppear {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .game-stats {
-  margin-top: 20px;
-  padding: 20px;
-  border: 2px solid #3498db;
-  border-radius: 8px;
-  background-color: #f8f9fa;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 35px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  margin-top: 30px;
+  width: 80%;
+  max-width: 500px;
+  backdrop-filter: blur(8px);
 }
 
 .game-stats h3 {
-  color: #2c3e50;
-  margin-bottom: 15px;
+  color: #ffffff;
+  font-size: 1.8em;
+  margin-bottom: 25px;
+  text-align: center;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 15px;
 }
 
 .game-stats p {
-  margin: 8px 0;
-  color: #34495e;
+  margin: 15px 0;
+  color: #ffffff;
+  font-size: 1.2em;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.game-stats p:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(10px);
 }
