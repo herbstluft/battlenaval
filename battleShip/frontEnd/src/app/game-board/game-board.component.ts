@@ -3,6 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common'; // <-- importa esto
 import { environment } from '../../environments/environment';
+import { PusherService } from '../pusher.service';
+import { Subscription } from 'rxjs';
+
+
 
 interface Cell {
   hasShip: boolean;
@@ -18,6 +22,10 @@ interface Cell {
   standalone: true,
 })
 export class GameBoardComponent implements OnInit {
+
+  private ReadChangeTurnSubscription: Subscription = new Subscription();
+
+
   boardSize = 8;
   myBoard: Cell[][] = [];
   opponentBoard: Cell[][] = [];
@@ -25,11 +33,12 @@ export class GameBoardComponent implements OnInit {
   gameId!: number;
   currentTurn!: string; // 'me' or 'opponent'
   message = '';
+  error = '';
   token = localStorage.getItem('token');
   playerId!: number; // Para saber si somos player1 o player2
 
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {}
+  constructor(private route: ActivatedRoute, private http: HttpClient, private pusherService: PusherService  ) {}
 
   ngOnInit(): void {
     this.gameId = Number(this.route.snapshot.paramMap.get('id'));
@@ -46,6 +55,8 @@ export class GameBoardComponent implements OnInit {
     }).subscribe({
       next: (user) => {
         this.playerId = user.id;
+        this.subscribeToGameReadChangeTurn();
+
         this.fetchGameState();  // Llamar a fetchGameState solo después de obtener el playerId
       },
       error: (err) => {
@@ -74,42 +85,26 @@ export class GameBoardComponent implements OnInit {
       headers: { Authorization: `Bearer ${this.token}` }
     }).subscribe({
       next: (data) => {
-        console.log(this.playerId);
-        // Verificar si el usuario actual es player1 o player2
-        const isPlayer1 = this.playerId === data.player1_id;
-        const isPlayer2 = this.playerId === data.player2_id;
-  
-        console.log(isPlayer1);
-        // Asignar los tableros correctamente
-        if (isPlayer1) {
-          this.myBoard = this.initializeBoardFromData(data.myBoard);
-          this.opponentBoard = this.initializeBoardFromData(data.opponentBoard);
-        } else if (isPlayer2) {
-          // Para el jugador 2, los tableros están invertidos
-          this.myBoard = this.initializeBoardFromData(data.opponentBoard);
-          this.opponentBoard = this.initializeBoardFromData(data.myBoard);
-        }
-  
-        // Determinar de quién es el turno actual
-        const isMyTurn = (data.currentTurn === data.player1_id && isPlayer1) || 
-                         (data.currentTurn === data.player2_id && isPlayer2);
-        this.currentTurn = isMyTurn ? 'me' : 'opponent';
+        this.updateGameState(data);
       },
       error: (err) => {
+        console.error('Error al cargar el estado del juego:', err);
         this.message = 'Error al cargar el estado del juego';
-        console.error(err);
       }
     });
   }
-  initializeBoardFromData(boardData: any[][]): Cell[][] {
+  private initializeBoardFromData(boardData: any[][], isOpponentBoard = false): Cell[][] {
     return boardData.map(row => {
       return row.map(cell => {
-        // Verificamos si la celda es null o undefined y asignamos valores predeterminados
-        if (!cell) {
-          return { hasShip: false, isHit: false, isMiss: false };  // Valores por defecto
+        // Para el tablero del oponente, no mostrar barcos no golpeados
+        if (isOpponentBoard && !cell.isHit) {
+          return {
+            hasShip: false, // Ocultar barcos del oponente
+            isHit: cell.isHit,
+            isMiss: cell.isMiss
+          };
         }
-  
-        // Aseguramos que las propiedades sean válidas
+        
         return {
           hasShip: cell.hasShip ?? false,
           isHit: cell.isHit ?? false,
@@ -119,32 +114,94 @@ export class GameBoardComponent implements OnInit {
     });
   }
   
-  
-
   attackCell(row: number, col: number): void {
     if (this.currentTurn !== 'me') {
-      this.message = 'Espera tu turno...';
+      this.message = 'No es tu turno';
       return;
     }
-
+  
+    if (this.opponentBoard[row][col].isHit || this.opponentBoard[row][col].isMiss) {
+      this.message = 'Ya atacaste esta celda';
+      return;
+    }
+  
     this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
       row, col
     }, {
       headers: { Authorization: `Bearer ${this.token}` }
     }).subscribe({
-      next: (result) => {
-        this.message = result.message;
-        this.opponentBoard[row][col] = {
-          hasShip: false,
-          isHit: result.hit,
-          isMiss: !result.hit
-        };
-        this.currentTurn = 'opponent';
+      next: (response) => {
+        this.message = response.message;
+        // La actualización real vendrá por Pusher
       },
       error: (err) => {
         console.error('Error al atacar:', err);
-        this.message = 'Error al realizar el ataque';
+        this.message = err.error?.message || 'Error en el ataque';
       }
     });
   }
+private subscribeToGameReadChangeTurn() {
+  this.ReadChangeTurnSubscription?.unsubscribe();
+  this.ReadChangeTurnSubscription = this.pusherService
+    .subscribeToChannel('game-channel', 'game.changeTurn')
+    .subscribe(
+      (data: any) => {
+        
+        console.log('Evento changeTurn recibido:', data);
+        
+        // Verificar si el juego es para nosotros
+        if (data.game.id === this.gameId) {
+          // Determinar de quién es el turno
+          const isMyTurn = data.game.currentTurn === this.playerId;
+          this.currentTurn = isMyTurn ? 'me' : 'opponent';
+          
+          console.log(`Soy jugador ${this.playerId}, turno actual: ${data.game.currentTurn}, mi turno?: ${isMyTurn}`);
+          
+          // Actualizar ambos tableros
+          this.updateBoards(data.game);
+        }
+      },
+      error => {
+        console.error('Error en Pusher:', error);
+        this.error = 'Error de conexión con el servidor';
+      }
+    );
+}
+
+private updateBoards(gameData: any): void {
+  const isPlayer1 = this.playerId === gameData.player1_id;
+  
+  // Actualizar mi tablero
+  this.myBoard = this.initializeBoardFromData(
+    isPlayer1 ? gameData.player1_board : gameData.player2_board
+  );
+  
+  // Actualizar tablero del oponente (solo muestra hits/misses, no barcos)
+  this.opponentBoard = this.initializeBoardFromData(
+    isPlayer1 ? gameData.player2_board : gameData.player1_board
+  );
+  
+  this.message = gameData.message || '';
+}
+
+private updateGameState(gameData: any): void {
+  // Determinar si somos player1 o player2
+  const isPlayer1 = this.playerId === gameData.player1_id;
+  const isPlayer2 = this.playerId === gameData.player2_id;
+
+  // Actualizar los tableros según corresponda
+  if (isPlayer1) {
+    this.myBoard = this.initializeBoardFromData(gameData.player1_board || gameData.myBoard);
+    this.opponentBoard = this.initializeBoardFromData(gameData.player2_board || gameData.opponentBoard);
+  } else if (isPlayer2) {
+    this.myBoard = this.initializeBoardFromData(gameData.player2_board || gameData.opponentBoard);
+    this.opponentBoard = this.initializeBoardFromData(gameData.player1_board || gameData.myBoard);
+  }
+
+  // Actualizar el turno
+  this.currentTurn = gameData.currentTurn === this.playerId ? 'me' : 'opponent';
+  
+  // Actualizar mensajes u otros estados si es necesario
+  this.message = gameData.message || '';
+}
 }

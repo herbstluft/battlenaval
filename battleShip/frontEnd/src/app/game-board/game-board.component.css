@@ -15,27 +15,47 @@
   grid-template-columns: repeat(8, 1fr);
 }
 
+
+/* Estilos existentes... */
+
 .cell {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #f70000;
-  background-color: #f0f0f0;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
+/* Celda con barco (solo en tu tablero) */
 .cell.ship {
-  background-color: #007bff; /* azul */
+  background-color: #3498db;
 }
 
+/* Celda atacada y golpeó barco */
 .cell.hit {
-  background-color: red;
+  background-color: #e74c3c;
+  color: white;
 }
 
+/* Celda atacada y falló */
 .cell.miss {
-  background-color: lightgray;
+  background-color: #ecf0f1;
 }
 
-.message {
-  font-weight: bold;
-  margin-top: 15px;
+/* Celda en tablero oponente que ya fue atacada */
+.cell.attacked {
+  cursor: not-allowed;
+}
+
+/* Indicador visual para celdas atacadas */
+.cell.hit::after {
+  content: '✖';
+  font-size: 20px;
+}
+
+.cell.miss::after {
+  content: '○';
+  font-size: 20px;
 }

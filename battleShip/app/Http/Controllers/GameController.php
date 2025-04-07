@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\MyEvent;
 use App\Events\ReadCreated;
+use App\Events\ReadChangeTurn;
 
 class GameController extends Controller
 {
@@ -69,51 +70,7 @@ class GameController extends Controller
     }
   
     
-    public function makeMove(Request $request, Game $game)
-    {
-        if ($game->current_turn !== Auth::id()) {
-            return response()->json(['message' => 'No es tu turno'], 403);
-        }
-
-        $x = $request->x;
-        $y = $request->y;
-        
-        $isPlayer1 = Auth::id() === $game->player1_id;
-        $shots = $isPlayer1 ? 'player1_shots' : 'player2_shots';
-        $targetBoard = $isPlayer1 ? 'player2_board' : 'player1_board';
-        
-        // Registrar el disparo
-        $currentShots = $game->$shots;
-        $currentShots[] = ['x' => $x, 'y' => $y];
-        $game->$shots = $currentShots;
-        
-        // Verificar si es hit o miss
-        $targetBoardData = $game->$targetBoard;
-        $isHit = false;
-        
-        // Verificar que $targetBoardData no sea null antes de iterar
-        if ($targetBoardData && is_array($targetBoardData)) {
-            foreach ($targetBoardData as $ship) {
-                // Verificar que el barco tenga la clave 'positions' y sea un array
-                if (isset($ship['positions']) && is_array($ship['positions'])) {
-                    if (in_array(['x' => $x, 'y' => $y], $ship['positions'])) {
-                        $isHit = true;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Cambiar turno
-        $game->current_turn = $isPlayer1 ? $game->player2_id : $game->player1_id;
-        $game->save();
-        
-        return response()->json([
-            'game' => $game->load(['player1', 'player2']),
-            'hit' => $isHit
-        ]);
-    }
-    
+  
     public function getBoard(Game $game)
     {
         // Verificar si el usuario autenticado es uno de los jugadores
@@ -166,8 +123,6 @@ class GameController extends Controller
             'game_status' => $game->status
         ]);
     }
-
-
 
     private function initializeRandomBoard()
     {
@@ -243,44 +198,60 @@ class GameController extends Controller
     }
     
     
-
-
     public function attackCell(Request $request, $gameId)
     {
         $game = Game::findOrFail($gameId);
-
+    
         // Validar la entrada
         $validated = $request->validate([
             'row' => 'required|integer|min:0|max:7',
             'col' => 'required|integer|min:0|max:7',
         ]);
-
-        // Identificar quién está atacando
-        $attacker = $game->current_turn === 'player1' ? 'player1' : 'player2';
-        $opponent = $game->current_turn === 'player1' ? 'player2' : 'player1';
-
-        // Obtener el tablero del atacante y del oponente
-        $attackerBoard = $game->{$attacker . '_board'};
-        $opponentBoard = $game->{$opponent . '_board'};
-
-        // Revisar si la celda es un golpe
+    
+        // Determinar quién es el atacante y quién el oponente
+        $attacker = $game->current_turn === $game->player1_id ? $game->player1_id : $game->player2_id;
+        $opponent = $game->current_turn === $game->player1_id ? $game->player2_id : $game->player1_id;
+    
+        // Verificar que no se ataque a uno mismo
+        if ($attacker === $opponent) {
+            return response()->json([
+                'error' => 'El atacante no puede atacar a sí mismo.'
+            ], 400);
+        }
+    
+        // Verificar si los tableros existen en la base de datos y decodificarlos correctamente
+        $attackerBoard = json_decode($game->{$attacker . '_board'}, true);
+        $opponentBoard = json_decode($game->{$opponent . '_board'}, true);
+    
+        // Si los tableros son nulos o vacíos, inicializarlos con una estructura vacía
+        if (is_null($attackerBoard)) {
+            $attackerBoard = $this->initializeRandomBoard();  // Inicializar el tablero del atacante
+        }
+        if (is_null($opponentBoard)) {
+            $opponentBoard = $this->initializeRandomBoard();  // Inicializar el tablero del oponente
+        }
+    
+        // Revisar si la celda es un golpe  
         $hit = $opponentBoard[$validated['row']][$validated['col']]['hasShip'];
-
+    
         // Actualizar el tablero del oponente
         $opponentBoard[$validated['row']][$validated['col']] = [
             'hasShip' => false, // Marca la celda como vacía
             'isHit' => $hit,    // Indica si fue un golpe
             'isMiss' => !$hit  // Indica si fue un fallo
         ];
-
-        // Actualizar el turno
-        $game->current_turn = $game->current_turn === 'player1' ? 'player2' : 'player1';
-
+    
+        // Actualizar el turno correctamente
+        $game->current_turn = $attacker === $game->player1_id ? $game->player2_id : $game->player1_id;
+    
         // Guardar el juego con los cambios en los tableros y turno
         $game->update([
-            $attacker . '_board' => $attackerBoard,
-            $opponent . '_board' => $opponentBoard,
+            $attacker . '_board' => json_encode($attackerBoard),
+            $opponent . '_board' => json_encode($opponentBoard),
         ]);
+    
+        // Evento para notificar que se cambio de turno de ataque
+        event(new ReadChangeTurn($game));
 
         // Responder con el resultado del ataque
         return response()->json([
@@ -288,4 +259,8 @@ class GameController extends Controller
             'hit' => $hit
         ]);
     }
+    
+
+    
+    
 }
