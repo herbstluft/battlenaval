@@ -1,0 +1,46 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1 class="title-glow">Batalla Naval</h1>
+      <p class="subtitle">Activación de Cuenta</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #verificationForm="ngForm" class="login-form">
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-key"></i>
+          <input
+            type="number"
+            id="verificationCode"
+            class="form-control"
+            [(ngModel)]="verificationCode"
+            name="verificationCode"
+            required
+            placeholder="Ingresa el código de activación"
+          />
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="login-button"
+        [disabled]="!verificationForm.valid"
+      >
+        <span>Activar Cuenta</span>
+        <i class="bi bi-arrow-right"></i>
+      </button>
+    </form>
+
+    <!-- Alertas -->
+    <div *ngIf="successMessage" class="alert text-center alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert" style="border-radius: 15px;">
+      <strong>¡Éxito! </strong>{{ successMessage }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert text-center alert-danger alert-dismissible fade show mt-3 shadow-sm" role="alert" style="border-radius: 15px;">
+      <strong>¡Error! </strong>{{ errorMessage }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+  

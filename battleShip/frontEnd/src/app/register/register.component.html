@@ -1,0 +1,94 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1 class="title-glow">Batalla Naval</h1>
+      <p class="subtitle">¡Únete a la aventura, Almirante!</p>
+    </div>
+
+
+      <!-- Alertas -->
+  <div *ngIf="successMessage" class="alert text-center alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert" style="border-radius: 15px;">
+    <strong>¡Éxito! </strong>{{ successMessage }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert text-center alert-danger alert-dismissible fade show mt-3 shadow-sm" role="alert" style="border-radius: 15px;">
+    <strong>¡Error! </strong>{{ errorMessage }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="login-form">
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-person"></i>
+          <input
+            type="text"
+            [(ngModel)]="name"
+            name="name"
+            placeholder="Nombre"
+            required
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-envelope"></i>
+          <input
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="Correo Electrónico"
+            required
+            email
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-lock"></i>
+          <input
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Contraseña"
+            required
+            minlength="6"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-shield-lock"></i>
+          <input
+            type="password"
+            [(ngModel)]="password_confirmation"
+            name="password_confirmation"
+            placeholder="Confirma tu contraseña"
+            required
+            minlength="6"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="login-button" [disabled]="!registerForm.valid">
+        <span>Registrarse</span>
+        <i class="bi bi-arrow-right"></i>
+      </button>
+
+      <div class="additional-options">
+        <p class="register-link">
+          ¿Ya tienes una cuenta? <b (click)="login()" style="cursor: pointer;">Inicia sesión aquí</b>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+ 

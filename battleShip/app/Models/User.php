@@ -12,6 +12,9 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    const TABLE = 'users';
+
+    const ACTIVATION_CODE = 'activation_code';
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        self::ACTIVATION_CODE,
     ];
 
     /**

@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Events\MyEvent;
+use App\Http\Controllers\GameController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +15,20 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+
+
+Route::post('/test-broadcast', function () {
+    // Aquí debes emitir el evento
+    event(new MyEvent('¡Hola desde Laravel!')); 
+    return response()->json(['status' => 'OK', 'message' => 'Evento enviado']);
+});
+
+
+
+Route::post('/games/{game}/join', [GameController::class, 'join']);
+
+
 
 Route::get('/', function () {
     return view('welcome');

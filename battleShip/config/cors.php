@@ -15,20 +15,14 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
-    'allowed_methods' => ['*'],
-
-    'allowed_origins' => ['*'],
-
+    'paths' => ['api/*', 'broadcasting/*', '*',  'login', 'logout', 'csrf-token', 'sanctum/csrf-cookie'], // Permitir cualquier ruta en api y broadcasting
+    'allowed_methods' => ['*'], // Permitir todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
+    'allowed_origins' => ['http://localhost:4200'], // Permitir solicitudes desde tu frontend (Angular)
     'allowed_origins_patterns' => [],
-
-    'allowed_headers' => ['*'],
-
+    'allowed_headers' => ['*'], // Permitir cualquier cabecera
     'exposed_headers' => [],
-
     'max_age' => 0,
-
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
+

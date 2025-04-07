@@ -1,0 +1,55 @@
+<div class="game-container">
+  <!-- Estado del juego -->
+  <div class="game-status text-center mb-4">
+    <h2 class="text-white">Batalla Naval - Multijugador</h2>
+    <h4 class="text-white" *ngIf="gameId">Partida #{{ gameId }}</h4>
+    <div class="alert" [ngClass]="{'alert-success': gameOver && winner === 'Tú', 'alert-danger': gameOver && winner !== 'Tú', 'alert-info': !gameOver}" *ngIf="message">
+      {{ message }}
+    </div>
+  </div>
+
+  <div class="boards-container">
+    <!-- Tablero del jugador -->
+    <div class="board-section">
+      <h3 class="text-white mb-3">Tu Flota</h3>
+      <div class="game-board player-board">
+        <div class="board-row" *ngFor="let row of playerBoard; let i = index">
+          <div class="board-cell" *ngFor="let cell of row; let j = index"
+               [class.has-ship]="cell.hasShip"
+               [class.hit]="cell.isHit"
+               [class.miss]="cell.isMiss">
+            <i class="fas fa-ship" *ngIf="cell.hasShip && !cell.isHit"></i>
+            <i class="fas fa-times hit-marker" *ngIf="cell.isHit"></i>
+            <i class="fas fa-dot-circle miss-marker" *ngIf="cell.isMiss"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tablero del oponente -->
+    <div class="board-section">
+      <h3 class="text-white mb-3">Zona de Ataque</h3>
+      <div class="game-board opponent-board">
+        <div class="board-row" *ngFor="let row of opponentBoard; let i = index">
+          <div class="board-cell" *ngFor="let cell of row; let j = index"
+               (click)="onCellClick(i, j, true)"
+               [class.hit]="cell.isHit"
+               [class.miss]="cell.isMiss"
+               [class.clickable]="isMyTurn && !cell.isHit && !cell.isMiss && !gameOver">
+            <i class="fas fa-times hit-marker" *ngIf="cell.isHit"></i>
+            <i class="fas fa-dot-circle miss-marker" *ngIf="cell.isMiss"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicador de turno -->
+  <div class="turn-indicator text-center mt-4">
+    <h4 class="text-white" [class.active]="isMyTurn && !gameOver">
+      <i class="fas" [class.fa-play]="isMyTurn && !gameOver" [class.fa-pause]="!isMyTurn && !gameOver" [class.fa-trophy]="gameOver"></i>
+      <span *ngIf="!gameOver">{{ isMyTurn ? 'Tu turno' : 'Turno del oponente' }}</span>
+      <span *ngIf="gameOver">{{ winner === 'Tú' ? '¡Has ganado!' : 'Has perdido' }}</span>
+    </h4>
+  </div>
+</div>

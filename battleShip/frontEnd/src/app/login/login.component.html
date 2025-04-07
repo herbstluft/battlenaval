@@ -1,0 +1,61 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1 class="title-glow">Batalla Naval</h1>
+      <p class="subtitle">¡Bienvenido de nuevo, Almirante!</p>
+    </div>
+
+          <!-- Alertas -->
+  <div *ngIf="successMessage" class="alert text-center alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert" style="border-radius: 15px;">
+    <strong>¡Éxito! </strong>{{ successMessage }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert text-center alert-danger alert-dismissible fade show mt-3 shadow-sm" role="alert" style="border-radius: 15px;">
+    <strong>¡Error! </strong>{{ errorMessage }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-person"></i>
+          <input
+            type="text"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="Correo electrónico"
+            required
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-group">
+          <i class="bi bi-lock"></i>
+          <input
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Contraseña"
+            required
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="login-button">
+        <span>Iniciar Sesión</span>
+        <i class="bi bi-arrow-right"></i>
+      </button>
+
+      <div class="additional-options">
+        <p class="register-link">
+          ¿No tienes una cuenta? <b style="cursor: pointer;" (click)="register()">Regístrate aquí</b>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

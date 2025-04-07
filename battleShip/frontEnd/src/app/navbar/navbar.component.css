@@ -1,0 +1,10 @@
+.navbar-brand {
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+  }
+  .nav-link {
+    transition: color 0.3s ease;
+  }
+  .nav-link:hover {
+    color: #6dd5ed !important;
+  }

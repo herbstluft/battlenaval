@@ -1,0 +1,67 @@
+<app-navbar></app-navbar>
+
+<div class="container-fluid vh-100 p-0" style="background: linear-gradient(135deg, #1a2a6c, #2a4858, #141E30)">
+  <div class="position-relative h-100 d-flex align-items-center justify-content-center">
+    <!-- Efecto de olas con gradiente -->
+    <div class="position-absolute w-100 h-100" style="background: linear-gradient(0deg, rgba(255,255,255,0.1) 0%, transparent 50%); animation: waveGradient 3s ease-in-out infinite;"></div>
+    
+    <div class="container position-relative">
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+          <!-- Tarjeta principal con efecto glassmórfico -->
+          <div class="card border-0 bg-transparent" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1);">
+            <div class="card-body p-5">
+              <!-- Icono naval -->
+              <div class="mb-4">
+                <i class="fas fa-anchor fa-4x text-white"></i>
+              </div>
+              
+              <!-- Título y subtítulo -->
+              <h1 class="display-4 text-white mb-3 text-glow">¡Bienvenido a Batalla Naval!</h1>
+              <p class="lead text-white-50 mb-5">Prepárate para la batalla, almirante. Los mares te esperan.</p>
+              
+              <!-- Botón de comenzar partida -->
+              <button class="btn btn-lg px-5 py-3 start-button text-white" 
+                      style="background: linear-gradient(45deg, #2193b0, #6dd5ed); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
+                      (click)="startGame()">
+                <i class="fas fa-play me-2"></i>
+                Comenzar Partida
+              </button>
+            </div>
+          </div>
+          
+          <!-- Estadísticas del jugador -->
+          <div class="row mt-4 g-3">
+            <div class="col-md-4">
+              <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
+                <div class="card-body">
+                  <i class="fas fa-trophy mb-3"></i>
+                  <h5>Victorias</h5>
+                  <p class="mb-0 display-6">{{playerStats.victories || 0}}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
+                <div class="card-body">
+                  <i class="fas fa-gamepad mb-3"></i>
+                  <h5>Partidas</h5>
+                  <p class="mb-0 display-6">{{playerStats.totalGames || 0}}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
+                <div class="card-body">
+                  <i class="fas fa-star mb-3"></i>
+                  <h5>Precisión</h5>
+                  <p class="mb-0 display-6">{{playerStats.accuracy || 0}}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
