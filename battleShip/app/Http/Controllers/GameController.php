@@ -130,7 +130,7 @@ class GameController extends Controller
     private function initializeRandomBoard()
     {
         $board = [];
-        $shipsToPlace = 1; // Número total de barcos
+        $shipsToPlace = 15; // Número total de barcos
         
         // Crear un tablero vacío de 8x8
         for ($i = 0; $i < 8; $i++) {

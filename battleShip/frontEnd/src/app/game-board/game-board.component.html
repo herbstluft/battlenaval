@@ -1,4 +1,25 @@
+
 <div class="game-container">
+
+  <!-- Add game statistics -->
+  <div class="game-stats" *ngIf="isGameOver">
+    <h3>Estadísticas del Juego</h3>
+    <div class="winner-announcement" [ngClass]="{'victory': gameStats.winner === 'Tú', 'defeat': gameStats.winner === 'Oponente'}">
+      <p class="winner">{{ gameStats.winner === 'Tú' ? '¡Has Ganado! 🎉' : '¡Has Perdido! 🏆' }}</p>
+    </div>
+    <div class="stats-details">
+
+      <p><strong>Total de disparos:</strong> {{ gameStats.totalShots }}</p>
+      <p><strong>Aciertos:</strong> {{ gameStats.hits }}</p>
+      <p><strong>Fallos:</strong> {{ gameStats.misses }}</p>
+      <p><strong>Precisión:</strong> {{ gameStats.totalShots > 0 ? (gameStats.hits / gameStats.totalShots * 100).toFixed(1) : 0 }}%</p>
+      <p><strong>Barcos hundidos:</strong> {{ gameStats.hits }}</p>
+      <p><strong>Eficiencia:</strong> {{ (gameStats.hits / gameStats.totalShots * 100).toFixed(1) }}%</p>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+      <button type="button" class="btn btn-warning" (click)="home()">Inicio</button>
+    </div>
+  </div>
   <h2>Tu Tablero</h2>
 
   <div class="board">
@@ -35,23 +56,5 @@
 
   <div *ngIf="message" class="message">{{ message }}</div>
 
-  <!-- Add game statistics -->
-  <div class="game-stats" *ngIf="isGameOver">
-    <h3>Estadísticas del Juego</h3>
-    <div class="winner-announcement" [ngClass]="{'victory': gameStats.winner === 'Tú', 'defeat': gameStats.winner === 'Oponente'}">
-      <p class="winner">{{ gameStats.winner === 'Tú' ? '¡Has Ganado! 🎉' : '¡Has Perdido! 🏆' }}</p>
-    </div>
-    <div class="stats-details">
 
-      <p><strong>Total de disparos:</strong> {{ gameStats.totalShots }}</p>
-      <p><strong>Aciertos:</strong> {{ gameStats.hits }}</p>
-      <p><strong>Fallos:</strong> {{ gameStats.misses }}</p>
-      <p><strong>Precisión:</strong> {{ gameStats.totalShots > 0 ? (gameStats.hits / gameStats.totalShots * 100).toFixed(1) : 0 }}%</p>
-      <p><strong>Barcos hundidos:</strong> {{ gameStats.hits }}</p>
-      <p><strong>Eficiencia:</strong> {{ (gameStats.hits / gameStats.totalShots * 100).toFixed(1) }}%</p>
-    </div>
-    <div class="d-flex justify-content-center mt-3">
-      <button type="button" class="btn btn-warning" (click)="home()">Inicio</button>
-    </div>
-  </div>
 </div>
