@@ -4,6 +4,7 @@ import { ApiService } from '../services/api.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 interface GameHistory {
   id: number;
@@ -33,7 +34,8 @@ export class GameHistoryComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -71,5 +73,9 @@ export class GameHistoryComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  viewGameDetails(gameId: number): void {
+    this.router.navigate(['/game-details', gameId]);
   }
 }

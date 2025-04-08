@@ -23,5 +23,11 @@ export const routes: Routes = [
     path: 'game-history',
     loadComponent: () => import('./game-history/game-history.component')
       .then(m => m.GameHistoryComponent)
+  },
+  {
+    path: 'game-details/:id',
+    loadComponent: () => import('./game-details/game-details.component')
+      .then(m => m.GameDetailsComponent)
   }
+
 ];

@@ -353,10 +353,14 @@ public function getGameHistory()
         $winner = Winner::where('winner_id', $game->winner_id)
                        ->first();
 
+        // Convert UTC to America/Mexico_City timezone
+        $gameDate = $game->created_at->setTimezone('America/Mexico_City');
+        $completedAt = $game->completed_at ? $game->completed_at->setTimezone('America/Mexico_City') : null;
+
         return [
             'id' => $game->id,
-            'date' => $game->created_at->format('Y-m-d H:i:s'),
-            'completed_at' => $game->completed_at ? $game->completed_at->format('Y-m-d H:i:s') : null,
+            'date' => $gameDate->format('Y-m-d H:i:s'),
+            'completed_at' => $completedAt ? $completedAt->format('Y-m-d H:i:s') : null,
             'winner_id' => $game->winner_id,
             'player1_id' => $game->player1_id,
             'player2_id' => $game->player2_id,
@@ -368,6 +372,53 @@ public function getGameHistory()
     });
 
     return response()->json($formattedGames);
+}
+    
+public function getGameDetails($id)
+{
+    $userId = Auth::id();
+    $game = Game::findOrFail($id);
+    
+    if ($game->player1_id !== $userId && $game->player2_id !== $userId) {
+        return response()->json([
+            'message' => 'No tienes acceso a esta partida'
+        ], 403);
+    }
+
+    $winner = Winner::where('winner_id', $game->winner_id)
+                    ->first();
+
+    // Get the boards and ensure proper handling
+    $player_board = is_string($game->player1_id === $userId ? $game->player1_board : $game->player2_board) 
+        ? json_decode($game->player1_id === $userId ? $game->player1_board : $game->player2_board, true)
+        : ($game->player1_id === $userId ? $game->player1_board : $game->player2_board);
+
+    $opponent_board = is_string($game->player1_id === $userId ? $game->player2_board : $game->player1_board)
+        ? json_decode($game->player1_id === $userId ? $game->player2_board : $game->player1_board, true)
+        : ($game->player1_id === $userId ? $game->player2_board : $game->player1_board);
+
+    $gameDetails = [
+        'id' => $game->id,
+        'date' => $game->created_at,
+        'completed_at' => $game->completed_at,
+        'status' => $game->status,
+        'winner_id' => $game->winner_id,
+        'player1_id' => $game->player1_id,
+        'player2_id' => $game->player2_id,
+        'total_moves' => $winner ? $winner->allshots : 0,
+        'hits' => $winner ? $winner->asserts : 0,
+        'misses' => $winner ? $winner->fails : 0,
+        'accuracy' => $winner ? $winner->presicion : 0,
+        'boats_destroyed' => $winner ? $winner->boats_hints : 0,
+        'is_winner' => $game->winner_id === $userId,
+        'player_role' => $game->player1_id === $userId ? 'player1' : 'player2',
+        'final_boards' => [
+            'player_board' => $player_board,
+            'opponent_board' => $opponent_board
+        ]
+    ];
+
+    return response()->json($gameDetails);
 }
     
 }

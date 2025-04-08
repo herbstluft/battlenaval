@@ -1,0 +1,129 @@
+<app-navbar></app-navbar>
+
+<div class="container-fluid min-vh-100 py-5" style="background: linear-gradient(135deg, #1a2a6c, #2a4858, #141E30)">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error" class="alert alert-danger">
+          <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+        </div>
+
+        <!-- Game Details -->
+        <div *ngIf="!loading && !error && gameDetails" class="animate__animated animate__fadeIn">
+          <!-- Header -->
+          <div class="text-center mb-5">
+            <h2 class="display-4 text-white mb-3">
+              <i class="fas fa-gamepad me-3"></i>Detalles de la Partida
+            </h2>
+            <p class="text-light">Partida #{{ gameDetails.id }}</p>
+          </div>
+
+          <!-- Game Info Cards -->
+          <div class="row g-4">
+            <!-- Basic Info Card -->
+            <div class="col-md-6">
+              <div class="card bg-dark text-white h-100">
+                <div class="card-body">
+                  <h4 class="card-title mb-4">Información General</h4>
+                  <ul class="list-unstyled">
+                    <li class="mb-3">
+                      <i class="far fa-calendar-alt me-2"></i>
+                      Fecha: {{ gameDetails.date | date:'dd/MM/yyyy HH:mm' }}
+                    </li>
+                    <li class="mb-3">
+                      <i class="fas fa-flag-checkered me-2"></i>
+                      Estado: 
+                      <span class="badge" [ngClass]="{
+                        'bg-success': gameDetails.status === 'finished',
+                        'bg-warning': gameDetails.status === 'in_progress',
+                        'bg-secondary': gameDetails.status === 'abandoned'
+                      }">{{ gameDetails.status }}</span>
+                    </li>
+                    <li class="mb-3">
+                      <i class="fas fa-user me-2"></i>
+                      Rol: {{ gameDetails.player_role === 'player1' ? 'Jugador 1' : 'Jugador 2' }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="col-md-6">
+              <div class="card bg-dark text-white h-100">
+                <div class="card-body">
+                  <h4 class="card-title mb-4">Estadísticas</h4>
+                  <ul class="list-unstyled">
+                    <li class="mb-3">
+                      <i class="fas fa-crosshairs me-2"></i>
+                      Movimientos Totales: {{ gameDetails.total_moves }}
+                    </li>
+                    <li class="mb-3">
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-bullseye me-2"></i>
+                        <span>Precisión: </span>
+                        <div class="progress ms-2 flex-grow-1" style="height: 20px;">
+                          <div class="progress-bar" 
+                               [ngClass]="{
+                                 'bg-success': gameDetails.accuracy >= 70,
+                                 'bg-warning': gameDetails.accuracy >= 40 && gameDetails.accuracy < 70,
+                                 'bg-danger': gameDetails.accuracy < 40
+                               }"
+                               [style.width.%]="gameDetails.accuracy">
+                            {{ gameDetails.accuracy }}%
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li class="mb-3">
+                      <i class="fas fa-bomb me-2"></i>
+                      Aciertos: {{ gameDetails.hits }}
+                    </li>
+                    <li class="mb-3">
+                      <i class="fas fa-times me-2"></i>
+                      Fallos: {{ gameDetails.misses }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Result Card -->
+            <div class="col-12">
+              <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                  <h4 class="card-title mb-4">Resultado Final</h4>
+                  <div [ngClass]="{
+                    'text-success': gameDetails.is_winner,
+                    'text-danger': !gameDetails.is_winner
+                  }">
+                    <i class="fas fa-3x mb-3" [ngClass]="{
+                      'fa-trophy': gameDetails.is_winner,
+                      'fa-times-circle': !gameDetails.is_winner
+                    }"></i>
+                    <h3>{{ gameDetails.is_winner ? '¡Victoria!' : 'Derrota' }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Back Button -->
+          <div class="text-center mt-5">
+            <button class="btn btn-outline-light btn-lg" routerLink="/game-history">
+              <i class="fas fa-arrow-left me-2"></i>Volver al Historial
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     // Add this with your other protected routes
     // Change the route to be more specific
     Route::middleware('auth:sanctum')->get('/games-history', [GameController::class, 'getGameHistory']);
+    Route::middleware('auth:sanctum')->get('/games/{id}/details', [GameController::class, 'getGameDetails']);
     Route::middleware('auth:sanctum')->get('/user/stats', [GameController::class, 'getUserStats']);
 
 

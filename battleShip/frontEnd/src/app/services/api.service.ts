@@ -108,4 +108,10 @@ export class ApiService {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
   }
+
+  getGameDetails(gameId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/games/${gameId}/details`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+  }
 }

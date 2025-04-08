@@ -31,15 +31,18 @@
             <div *ngIf="!loading && !error" class="table-responsive animate__animated animate__fadeIn">
               <table class="table table-hover">
                 <thead>
+                  <!-- Add this to the table header -->
                   <tr class="text-white-50 text-uppercase" style="border-bottom: 2px solid rgba(255,255,255,0.1)">
                     <th class="py-3">Fecha</th>
                     <th class="py-3">Estado</th>
                     <th class="py-3">Resultado</th>
                     <th class="py-3">Movimientos</th>
                     <th class="py-3">Precisión</th>
+                    <th class="py-3">Acciones</th>  <!-- New column -->
                   </tr>
                 </thead>
                 <tbody>
+                  <!-- Add this to the table row -->
                   <tr *ngFor="let game of gameHistory" class="text-white" style="border-bottom: 1px solid rgba(255,255,255,0.05)">
                     <td class="py-3">
                       <i class="far fa-calendar-alt me-2"></i>
@@ -80,6 +83,12 @@
                           {{ game.accuracy }}%
                         </div>
                       </div>
+                    </td>
+                    <td class="py-3">
+                      <button class="btn btn-info btn-sm" (click)="viewGameDetails(game.id)">
+                        <i class="fas fa-eye me-2"></i>
+                        Ver Detalles
+                      </button>
                     </td>
                   </tr>
                 </tbody>
