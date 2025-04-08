@@ -78,4 +78,9 @@ export class GameHistoryComponent implements OnInit {
   viewGameDetails(gameId: number): void {
     this.router.navigate(['/game-details', gameId]);
   }
+
+  back(){
+    console.log('Back');
+    this.router.navigate(['/dashboard']);
+  }
 }
