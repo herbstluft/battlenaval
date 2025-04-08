@@ -302,5 +302,33 @@ class GameController extends Controller
     }
 
     
+public function getUserStats()
+{
+    $userId = Auth::id();
+    
+    // Get total games
+    $totalGames = Game::where(function($query) use ($userId) {
+        $query->where('player1_id', $userId)
+              ->orWhere('player2_id', $userId);
+    })
+    ->where('status', 'finished')
+    ->count();
+
+    // Get victories
+    $victories = Game::where('winner_id', $userId)
+        ->where('status', 'finished')
+        ->count();
+
+    $accuracy = Winner::where('winner_id', $userId)
+        ->avg('presicion') ?? 0;
+
+    return response()->json([
+        'totalGames' => $totalGames,
+        'victories' => $victories,
+        'accuracy' => round($accuracy, 1)
+    ]);
+}
     
 }
+
+

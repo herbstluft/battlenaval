@@ -49,6 +49,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     Route::middleware('auth:sanctum')->get('/games/{gameId}', [GameController::class, 'getGameState']);
     Route::middleware('auth:sanctum')->post('/games/{gameId}/attack', [GameController::class, 'attackCell']);
     Route::post('/games/{id}/gameover', [GameController::class, 'gameOver'])->middleware('auth:sanctum');
+    // Add this new route with the existing protected routes
+    Route::middleware('auth:sanctum')->get('/user/stats', [GameController::class, 'getUserStats']);
 
 
     

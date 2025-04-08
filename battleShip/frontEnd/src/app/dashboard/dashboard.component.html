@@ -37,7 +37,12 @@
                 <div class="card-body">
                   <i class="fas fa-trophy mb-3"></i>
                   <h5>Victorias</h5>
-                  <p class="mb-0 display-6">{{playerStats.victories || 0}}</p>
+                  <p class="mb-0 display-6">
+                    <span *ngIf="loading">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                    <span *ngIf="!loading">{{playerStats.victories}}</span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -46,7 +51,12 @@
                 <div class="card-body">
                   <i class="fas fa-gamepad mb-3"></i>
                   <h5>Partidas</h5>
-                  <p class="mb-0 display-6">{{playerStats.totalGames || 0}}</p>
+                  <p class="mb-0 display-6">
+                    <span *ngIf="loading">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                    <span *ngIf="!loading">{{playerStats.totalGames}}</span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -55,7 +65,12 @@
                 <div class="card-body">
                   <i class="fas fa-star mb-3"></i>
                   <h5>Precisión</h5>
-                  <p class="mb-0 display-6">{{playerStats.accuracy || 0}}%</p>
+                  <p class="mb-0 display-6">
+                    <span *ngIf="loading">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                    <span *ngIf="!loading">{{playerStats.accuracy}}%</span>
+                  </p>
                 </div>
               </div>
             </div>

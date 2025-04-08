@@ -3,6 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+// Add this interface at the top of the file with the other interfaces
+interface PlayerStats {
+  victories: number;
+  totalGames: number;
+  accuracy: number;
+}
+
 interface AuthResponse {
     message: string;
     redirectUrl: string;
@@ -87,5 +94,11 @@ export class ApiService {
   // Método para verificar el estado de una partida
   checkGameStatus(gameId: string): Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/games/${gameId}/status`, { headers: this.getHeaders() });
+  }
+
+  getPlayerStats(): Observable<PlayerStats> {
+    return this.http.get<PlayerStats>(`${this.apiUrl}/user/stats`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
   }
 }

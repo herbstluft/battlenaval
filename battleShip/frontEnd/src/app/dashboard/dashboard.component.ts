@@ -48,8 +48,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadPlayerStats(): void {
-    // Aquí implementaremos la carga de estadísticas del jugador
-   /*  this.apiService.getPlayerStats().subscribe({
+    this.loading = true;
+    this.apiService.getPlayerStats().subscribe({
       next: (stats: PlayerStats) => {
         this.playerStats = stats;
         this.loading = false;
@@ -59,7 +59,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.error = 'Error al cargar las estadísticas';
         this.loading = false;
       }
-    }); */
+    });
   }
 
   //loadUserTasks(): void {
