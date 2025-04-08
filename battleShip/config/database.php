@@ -91,6 +91,14 @@ return [
             'prefix_indexes' => true,
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => env('MONGODB_URI'),
+            'database' => 'battleship', // Specify your database name here
+            'options' => [
+                'database' => env('MONGODB_DATABASE', 'battleship')
+            ],
+        ],
     ],
 
     /*

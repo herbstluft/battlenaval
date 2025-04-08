@@ -11,6 +11,7 @@ use App\Events\ReadCreated;
 use App\Events\ReadChangeTurn;
 use App\Events\GameOver;
 use App\Models\Winner;
+use App\Models\Attack;
 
 class GameController extends Controller
 {
@@ -199,68 +200,89 @@ class GameController extends Controller
         return $board;
     }
     
-    
     public function attackCell(Request $request, $gameId)
-    {
-        $game = Game::findOrFail($gameId);
-    
-        // Validar la entrada
-        $validated = $request->validate([
-            'row' => 'required|integer|min:0|max:7',
-            'col' => 'required|integer|min:0|max:7',
-        ]);
-    
-        // Determinar quién es el atacante y quién el oponente
-        $attacker = $game->current_turn === $game->player1_id ? $game->player1_id : $game->player2_id;
-        $opponent = $game->current_turn === $game->player1_id ? $game->player2_id : $game->player1_id;
-    
-        // Verificar que no se ataque a uno mismo
-        if ($attacker === $opponent) {
-            return response()->json([
-                'error' => 'El atacante no puede atacar a sí mismo.'
-            ], 400);
-        }
-    
-        // Verificar si los tableros existen en la base de datos y decodificarlos correctamente
-        $attackerBoard = json_decode($game->{$attacker . '_board'}, true);
-        $opponentBoard = json_decode($game->{$opponent . '_board'}, true);
-    
-        // Si los tableros son nulos o vacíos, inicializarlos con una estructura vacía
-        if (is_null($attackerBoard)) {
-            $attackerBoard = $this->initializeRandomBoard();  // Inicializar el tablero del atacante
-        }
-        if (is_null($opponentBoard)) {
-            $opponentBoard = $this->initializeRandomBoard();  // Inicializar el tablero del oponente
-        }
-    
-        // Revisar si la celda es un golpe  
-        $hit = $opponentBoard[$validated['row']][$validated['col']]['hasShip'];
-    
-        // Actualizar el tablero del oponente
-        $opponentBoard[$validated['row']][$validated['col']] = [
-            'hasShip' => false, // Marca la celda como vacía
-            'isHit' => $hit,    // Indica si fue un golpe
-            'isMiss' => !$hit  // Indica si fue un fallo
-        ];
-    
-        // Actualizar el turno correctamente
-        $game->current_turn = $attacker === $game->player1_id ? $game->player2_id : $game->player1_id;
-    
-        // Guardar el juego con los cambios en los tableros y turno
-        $game->update([
-            $attacker . '_board' => json_encode($attackerBoard),
-            $opponent . '_board' => json_encode($opponentBoard),
-        ]);
-    
-        // Evento para notificar que se cambio de turno de ataque
-        event(new ReadChangeTurn($game));
+{
+    $game = Game::findOrFail($gameId);
 
-        // Responder con el resultado del ataque
+    // Validar la entrada
+    $validated = $request->validate([
+        'row' => 'required|integer|min:0|max:7',
+        'col' => 'required|integer|min:0|max:7',
+        'isHit' =>'required|boolean'
+    ]);
+
+    // Determinar quién es el atacante y el oponente
+    $attacker = $game->current_turn === $game->player1_id ? $game->player1_id : $game->player2_id;
+    $opponent = $game->current_turn === $game->player1_id ? $game->player2_id : $game->player1_id;
+
+    if ($attacker === $opponent) {
         return response()->json([
-            'message' => $hit ? '¡Acertaste!' : 'Fallaste.',
-            'hit' => $hit
-        ]);
+            'error' => 'El atacante no puede atacar a sí mismo.'
+        ], 400);
     }
+
+    // Obtener y decodificar los tableros
+    $attackerBoardJson = $game->{$attacker . '_board'};
+    $opponentBoardJson = $game->{$opponent . '_board'};
+
+    $attackerBoard = json_decode($attackerBoardJson, true);
+    $opponentBoard = json_decode($opponentBoardJson, true);
+
+    // Asegurarse de que los tableros estén correctamente formateados
+    if (!is_array($attackerBoard) || count($attackerBoard) === 0) {
+        $attackerBoard = $this->initializeRandomBoard();
+    }
+    if (!is_array($opponentBoard) || count($opponentBoard) === 0) {
+        $opponentBoard = $this->initializeRandomBoard();
+    }
+
+    $row = $validated['row'];
+    $col = $validated['col'];
+
+    $accert = $validated['isHit'];
+    // Asegurar que la celda existe y está bien definida
+    $cell = $opponentBoard[$row][$col] ?? null;
+
+
+    $hit = is_array($cell) && isset($cell['hasShip']) ? $cell['hasShip'] : false;
+
+    // Registrar el ataque
+    $attack = Attack::create([
+        'game_id' => $gameId,
+        'attacker_id' => $attacker,
+        'target_id' => $opponent,
+        'row' => $row,
+        'col' => $col,
+        'is_hit' => $accert,
+        'turn_number' => Attack::where('game_id', $gameId)->count() + 1,
+        'created_at' => now()
+    ]);
+
+    // Actualizar la celda atacada en el tablero del oponente
+    $opponentBoard[$row][$col] = [
+        'hasShip' => $hit,
+        'isHit' => $hit,
+        'isMiss' => !$hit
+    ];
+
+    // Cambiar el turno
+    $game->current_turn = $attacker === $game->player1_id ? $game->player2_id : $game->player1_id;
+
+    // Guardar los cambios del tablero
+    $game->update([
+        $opponent . '_board' => json_encode($opponentBoard),
+    ]);
+
+    // Notificar el cambio de turno
+    event(new ReadChangeTurn($game));
+
+    return response()->json([
+        'message' => $hit ? '¡Acertaste!' : 'Fallaste.',
+        'hit' => $hit,
+        'attack_id' => $attack->_id
+    ]);
+}
+
     
     public function gameOver(Request $request, $id)
     {
@@ -376,41 +398,36 @@ public function getGameHistory()
     
 public function getGameDetails($id)
 {
-    $userId = Auth::id();
     $game = Game::findOrFail($id);
-    
-    if ($game->player1_id !== $userId && $game->player2_id !== $userId) {
-        return response()->json([
-            'message' => 'No tienes acceso a esta partida'
-        ], 403);
+    $userId = Auth::id();
+
+    // Get all attacks for this game
+    $attacks = Attack::where('game_id', $id)
+        ->orderBy('turn_number', 'asc')
+        ->get();
+
+    // Get boards and handle both string and array formats
+    $player_board = $game->player1_id === $userId ? $game->player1_board : $game->player2_board;
+    $opponent_board = $game->player1_id === $userId ? $game->player2_board : $game->player1_board;
+
+    // Convert boards to arrays if they're strings
+    if (is_string($player_board)) {
+        $player_board = json_decode($player_board, true);
+    }
+    if (is_string($opponent_board)) {
+        $opponent_board = json_decode($opponent_board, true);
     }
 
-    $winner = Winner::where('winner_id', $game->winner_id)
-                    ->first();
-
-    // Get the boards and ensure proper handling
-    $player_board = is_string($game->player1_id === $userId ? $game->player1_board : $game->player2_board) 
-        ? json_decode($game->player1_id === $userId ? $game->player1_board : $game->player2_board, true)
-        : ($game->player1_id === $userId ? $game->player1_board : $game->player2_board);
-
-    $opponent_board = is_string($game->player1_id === $userId ? $game->player2_board : $game->player1_board)
-        ? json_decode($game->player1_id === $userId ? $game->player2_board : $game->player1_board, true)
-        : ($game->player1_id === $userId ? $game->player2_board : $game->player1_board);
-
-    $gameDetails = [
+    // Format the response
+    $response = [
         'id' => $game->id,
         'date' => $game->created_at,
-        'completed_at' => $game->completed_at,
-        'status' => $game->status,
         'winner_id' => $game->winner_id,
         'player1_id' => $game->player1_id,
         'player2_id' => $game->player2_id,
-        'total_moves' => $winner ? $winner->allshots : 0,
-        'hits' => $winner ? $winner->asserts : 0,
-        'misses' => $winner ? $winner->fails : 0,
-        'accuracy' => $winner ? $winner->presicion : 0,
-        'boats_destroyed' => $winner ? $winner->boats_hints : 0,
-        'is_winner' => $game->winner_id === $userId,
+        'status' => $game->status,
+        'completed_at' => $game->updated_at,
+        'attacks' => $attacks,
         'player_role' => $game->player1_id === $userId ? 'player1' : 'player2',
         'final_boards' => [
             'player_board' => $player_board,
@@ -418,7 +435,7 @@ public function getGameDetails($id)
         ]
     ];
 
-    return response()->json($gameDetails);
+    return response()->json($response);
 }
     
 }

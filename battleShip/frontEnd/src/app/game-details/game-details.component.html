@@ -97,19 +97,62 @@
             </div>
 
             <!-- Result Card -->
+            <!-- After the Statistics Card and before the Result Card -->
+            <div class="col-12">
+              <div class="card bg-dark text-white">
+                <div class="card-body">
+                  <h4 class="card-title mb-4">
+                    <i class="fas fa-history me-2"></i>Historial de Movimientos
+                  </h4>
+                  <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                      <thead>
+                        <tr>
+                          <th>Turno</th>
+                          <th>Jugador</th>
+                          <th>Posición</th>
+                          <th>Resultado</th>
+                          <th>Hora</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let attack of gameDetails.attacks">
+                          <td>{{ attack.turn_number }}</td>
+                          <td>
+                            <span [class]="attack.attacker_id === gameDetails.player1_id ? 'text-primary' : 'text-success'">
+                              {{ attack.attacker_id === (gameDetails.player_role === 'player1' ? gameDetails.player1_id : gameDetails.player2_id) ? 'Tú' : 'Oponente' }}
+                            </span>
+                          </td>
+                          <td>
+                            <span class="badge bg-secondary">
+                              Fila: {{ attack.row }}, Columna: {{ attack.col }}
+                            </span>
+                          </td>
+                          <td>
+                            <i [class]="attack.is_hit ? 'fas fa-check text-success' : 'fas fa-times text-danger'"></i>
+                            {{ attack.is_hit ? '¡Acierto!' : 'Fallo' }}
+                          </td>
+                          <td>{{ attack.created_at | date:'HH:mm:ss' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="col-12">
               <div class="card bg-dark text-white">
                 <div class="card-body text-center">
                   <h4 class="card-title mb-4">Resultado Final</h4>
                   <div [ngClass]="{
-                    'text-success': gameDetails.is_winner,
-                    'text-danger': !gameDetails.is_winner
+                    'text-success': gameDetails.winner_id === (gameDetails.player_role === 'player1' ? gameDetails.player1_id : gameDetails.player2_id),
+                    'text-danger': gameDetails.winner_id !== (gameDetails.player_role === 'player1' ? gameDetails.player1_id : gameDetails.player2_id)
                   }">
                     <i class="fas fa-3x mb-3" [ngClass]="{
-                      'fa-trophy': gameDetails.is_winner,
-                      'fa-times-circle': !gameDetails.is_winner
+                      'fa-trophy': gameDetails.winner_id === (gameDetails.player_role === 'player1' ? gameDetails.player1_id : gameDetails.player2_id),
+                      'fa-times-circle': gameDetails.winner_id !== (gameDetails.player_role === 'player1' ? gameDetails.player1_id : gameDetails.player2_id)
                     }"></i>
-                    <h3>{{ gameDetails.is_winner ? '¡Victoria!' : 'Derrota' }}</h3>
+                    <h3>{{ gameDetails.winner_id === (gameDetails.player_role === 'player1' ? gameDetails.player1_id : gameDetails.player2_id) ? '¡Victoria!' : 'Derrota' }}</h3>
                   </div>
                 </div>
               </div>

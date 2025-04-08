@@ -18,6 +18,19 @@ interface GameDetails {
   misses: number;
   is_winner: boolean;
   player_role: string;
+  attacks?: {
+    _id: string;
+    row: number;
+    col: number;
+    is_hit: boolean;
+    turn_number: number;
+    created_at: string;
+    attacker_id: number;
+    attacker?: {
+      id: number;
+      name: string;
+    };
+  }[];
 }
 
 @Component({
