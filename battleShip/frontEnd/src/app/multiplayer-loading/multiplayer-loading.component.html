@@ -1,35 +1,85 @@
-<div class="container">
-  <div *ngIf="loading" class="loading-spinner">
-    <p>Cargando...</p>
-  </div>
-
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
-
-  <div *ngIf="!loading && !currentGameId" class="game-options">
-    <h2>Partidas Disponibles</h2>
-    
-    <button (click)="createGame()" class="create-game-btn">
-      Crear Nueva Partida
-    </button>
-
-    <div class="available-games-list" *ngIf="availableGames.length > 0">
-      <div *ngFor="let game of availableGames" class="game-item">
-        <span>Partida de {{ game.player1.name }}</span>
-        <button (click)="joinGame(game.id)" class="join-game-btn">
-          Unirse
-        </button>
+<div class="container-fluid min-vh-100 py-5" style="background: linear-gradient(135deg, #1a2a6c, #2a4858, #141E30)">
+  <div class="container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5 animate__animated animate__fadeIn">
+      <div class="custom-loader">
+        <i class="fas fa-ship fa-3x text-info mb-4"></i>
+        <div class="waves"></div>
+        <p class="text-white mt-4">Preparando tu batalla naval...</p>
       </div>
     </div>
 
-    <p *ngIf="availableGames.length === 0" class="no-games-message">
-      No hay partidas disponibles en este momento
-    </p>
-  </div>
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert custom-alert animate__animated animate__fadeIn">
+      <i class="fas fa-exclamation-circle me-2"></i>
+      {{ error }}
+    </div>
 
-  <div *ngIf="currentGameId" class="waiting-message">
-    <p>Esperando a que un oponente se una a la partida...</p>
-  </div>
+    <!-- Game Options -->
+    <div *ngIf="!loading && !currentGameId" class="game-options animate__animated animate__fadeInUp">
+      <div class="text-center mb-2">
+        <div class="position-relative d-inline-block mb-4">
+          <br><br><br><br><br><br><br>
+          <i class="fas fa-compass fa-3x text-white opacity-25 position-absolute start-50 top-50 translate-middle"></i>
+          <h2 class="display-4 text-white position-relative" 
+              style="text-shadow: 3px 3px 6px rgba(0,0,0,0.4); letter-spacing: 2px;">
+            Partidas Disponibles
+          </h2>
+        </div>
+        <div class="divider my-4">
+          <span class="divider-line"></span>
+          <i class="fas fa-anchor mx-3 text-white-50"></i>
+          <span class="divider-line"></span>
+        </div>
+      </div>
 
+      <!-- Create Game Button -->
+      <div class="text-center mb-5">
+        <button (click)="createGame()" class="btn custom-btn-create">
+          <i class="fas fa-plus-circle me-2"></i>
+          Crear Nueva Partida
+        </button>
+      </div>
+
+      <!-- Available Games List -->
+      <div class="available-games-container">
+        <div class="available-games-list" *ngIf="availableGames.length > 0">
+          <div *ngFor="let game of availableGames; let i = index" 
+               class="game-item animate__animated animate__fadeIn"
+               [style.animationDelay.s]="i * 0.1">
+            <div class="game-info">
+              <i class="fas fa-user-circle text-info me-2"></i>
+              <span class="player-name">{{ game.player1.name }}</span>
+            </div>
+            <button (click)="joinGame(game.id)" class="btn custom-btn-join">
+              <i class="fas fa-sign-in-alt me-2"></i>
+              Unirse
+            </button>
+          </div>
+        </div>
+
+        <!-- No Games Message -->
+        <div *ngIf="availableGames.length === 0" 
+             class="text-center py-5 empty-state animate__animated animate__fadeIn">
+          <i class="fas fa-search fa-4x text-info mb-4"></i>
+          <h4 class="text-white mb-3">No hay partidas disponibles</h4>
+          <p class="text-white-50">¡Sé el primero en crear una nueva partida!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waiting Message -->
+    <div *ngIf="currentGameId" class="waiting-message text-center py-5 animate__animated animate__fadeIn">
+      <div class="waiting-animation">
+        <i class="fas fa-sync fa-spin fa-3x text-info mb-4"></i>
+        <h3 class="text-white mb-3">Esperando oponente</h3>
+        <p class="text-white-50">Tu flota está lista para la batalla...</p>
+        <div class="progress custom-progress mt-4">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" 
+               role="progressbar" 
+               style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

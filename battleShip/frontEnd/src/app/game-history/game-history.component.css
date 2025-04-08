@@ -54,3 +54,95 @@
 .table-responsive::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Divider Styles */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider-line {
+  height: 1px;
+  width: 100px;
+  background: rgba(255,255,255,0.2);
+  display: inline-block;
+}
+
+/* Table Styles */
+.custom-table {
+  background: transparent !important;
+}
+
+.hover-effect {
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.hover-effect:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.custom-btn-details {
+  background: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.5);
+  color: #17a2b8;
+}
+
+.custom-btn-details:hover {
+  background: rgba(23, 162, 184, 0.2);
+  color: #fff;
+}
+
+.status-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.result-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.victory {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.defeat {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.custom-progress {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+  border-radius: 4px;
+}
+
+.progress-high {
+  background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.progress-medium {
+  background: linear-gradient(45deg, #ffc107, #fd7e14);
+}
+
+.progress-low {
+  background: linear-gradient(45deg, #dc3545, #e83e8c);
+}
+
+.empty-state {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.custom-alert {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+}

@@ -99,3 +99,208 @@
   width: 3rem;
   height: 3rem;
 }
+
+
+/* Custom Loader */
+.custom-loader {
+  position: relative;
+  padding: 40px;
+}
+
+.waves {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: rgba(23, 162, 184, 0.2);
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: waves 2s infinite;
+}
+
+@keyframes waves {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider-line {
+  height: 1px;
+  width: 100px;
+  background: rgba(255,255,255,0.2);
+  display: inline-block;
+}
+
+/* Game Items */
+.available-games-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.game-item {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.game-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.game-info {
+  color: white;
+  font-size: 1.1em;
+}
+
+.player-name {
+  font-weight: 500;
+}
+
+/* Custom Buttons */
+.custom-btn-create {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 2px solid #28a745;
+  padding: 12px 30px;
+  font-size: 1.1em;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.custom-btn-create:hover {
+  background: #28a745;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.custom-btn-join {
+  background: rgba(23, 162, 184, 0.2);
+  color: #17a2b8;
+  border: 1px solid #17a2b8;
+  border-radius: 20px;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+.custom-btn-join:hover {
+  background: #17a2b8;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+}
+
+/* Empty State */
+.empty-state i {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Custom Progress Bar */
+.custom-progress {
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  width: 200px;
+  margin: 0 auto;
+}
+
+.custom-progress .progress-bar {
+  background: linear-gradient(90deg, #17a2b8, #28a745);
+}
+
+/* Custom Alert */
+.custom-alert {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  border-radius: 10px;
+  padding: 15px 20px;
+}
+
+/* Animations */
+.animate__animated {
+  animation-duration: 1s;
+}
+
+.waiting-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Remove or update these light-themed styles */
+.game-options {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.game-options h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.game-item {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.no-games-message {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.waiting-message {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Update text colors */
+.player-name {
+  color: white;
+}
+
+/* Update button styles if needed */
+.create-game-btn {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 2px solid #28a745;
+}
+
+.join-game-btn {
+  background: rgba(23, 162, 184, 0.2);
+  color: #17a2b8;
+  border: 1px solid #17a2b8;
+}

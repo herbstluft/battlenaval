@@ -16,4 +16,8 @@ export class NavbarComponent {
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }
+  dashboard() {
+    console.log('dashboard');
+    this.router.navigate(['/dashboard']);
+  }
 }

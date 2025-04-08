@@ -4,90 +4,108 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-12">
-        <!-- Header Section with Animation -->
+        <!-- Enhanced Header Section -->
         <div class="text-center mb-5 animate__animated animate__fadeIn">
-          <h2 class="display-4 text-white mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-            <i class="fas fa-history me-3"></i>Historial de Batallas
-          </h2>
-          <p class="text-light lead">Registro de tus batallas navales</p>
+          <div class="position-relative d-inline-block mb-4">
+            <br><br><br><br>
+            <i class="fas fa-history fa-3x text-white opacity-25 position-absolute start-50 top-50 translate-middle"></i>
+            <br>
+            <h2 class="display-4 text-white position-relative" 
+                style="text-shadow: 3px 3px 6px rgba(0,0,0,0.4); letter-spacing: 2px;">
+              Historial de Batallas
+            </h2>
+          </div>
+          <p class="text-light lead fw-light" style="letter-spacing: 1px;">
+            Revive tus épicas batallas navales
+          </p>
+          <div class="divider my-4">
+            <span class="divider-line"></span>
+            <i class="fas fa-anchor mx-3 text-white-50"></i>
+            <span class="divider-line"></span>
+          </div>
         </div>
 
-        <!-- Main Card -->
-        <div class="card border-0 shadow-lg" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+        <!-- Enhanced Main Card -->
+        <div class="card border-0 shadow-lg animate__animated animate__fadeInUp" 
+             style="backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.05); border-radius: 20px;">
           <div class="card-body p-4">
-            <!-- Loading Spinner -->
+            <!-- Styled Loading Spinner -->
             <div *ngIf="loading" class="text-center py-5">
-              <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Cargando...</span>
+              <div class="custom-spinner">
+                <i class="fas fa-compass fa-spin fa-3x text-info"></i>
+                <p class="mt-3 text-white-50">Cargando tu historial...</p>
               </div>
             </div>
 
-            <!-- Error Message -->
-            <div *ngIf="error" class="alert alert-danger animate__animated animate__fadeIn">
+            <!-- Styled Error Message -->
+            <div *ngIf="error" class="alert custom-alert animate__animated animate__fadeIn">
               <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
             </div>
 
-            <!-- Game History Table -->
+            <!-- Enhanced Game History Table -->
             <div *ngIf="!loading && !error" class="table-responsive animate__animated animate__fadeIn">
-              <table class="table table-hover">
+              <table class="table table-hover custom-table">
                 <thead>
-                  <!-- Add this to the table header -->
-                  <tr class="text-white-50 text-uppercase" style="border-bottom: 2px solid rgba(255,255,255,0.1)">
-                    <th class="py-3">Fecha</th>
-                    <th class="py-3">Estado</th>
-                    <th class="py-3">Resultado</th>
-                    <th class="py-3">Movimientos</th>
-                    <th class="py-3">Precisión</th>
-                    <th class="py-3">Acciones</th>  <!-- New column -->
+                  <tr class="text-white-50 text-uppercase">
+                    <th class="py-4">Fecha</th>
+                    <th class="py-4">Estado</th>
+                    <th class="py-4">Resultado</th>
+                    <th class="py-4">Movimientos</th>
+                    <th class="py-4">Precisión</th>
+                    <th class="py-4">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- Add this to the table row -->
-                  <tr *ngFor="let game of gameHistory" class="text-white" style="border-bottom: 1px solid rgba(255,255,255,0.05)">
-                    <td class="py-3">
-                      <i class="far fa-calendar-alt me-2"></i>
-                      {{ game.date | date:'dd/MM/yyyy HH:mm' }}
+                  <tr *ngFor="let game of gameHistory" 
+                      class="text-white hover-effect">
+                    <td class="py-4">
+                      <div class="d-flex align-items-center">
+                        <i class="far fa-calendar-alt me-2 text-info"></i>
+                        <span>{{ game.date | date:'dd/MM/yyyy HH:mm' }}</span>
+                      </div>
                     </td>
-                    <td class="py-3">
-                      <span class="badge" [ngClass]="{
-                        'bg-success': game.status === 'finished',
-                        'bg-warning': game.status === 'in_progress',
-                        'bg-secondary': game.status === 'abandoned'
+                    <td class="py-4">
+                      <span class="status-badge" [ngClass]="{
+                        'status-finished': game.status === 'finished',
+                        'status-progress': game.status === 'in_progress',
+                        'status-abandoned': game.status === 'abandoned'
                       }">{{ game.status }}</span>
                     </td>
-                    <td class="py-3">
-                      <span [ngClass]="{
-                        'text-success': game.winner_id === currentUserId,
-                        'text-danger': game.winner_id !== currentUserId
+                    <td class="py-4">
+                      <div class="result-badge" [ngClass]="{
+                        'victory': game.winner_id === currentUserId,
+                        'defeat': game.winner_id !== currentUserId
                       }">
                         <i class="fas" [ngClass]="{
                           'fa-trophy': game.winner_id === currentUserId,
                           'fa-times-circle': game.winner_id !== currentUserId
                         }"></i>
                         {{ game.winner_id === currentUserId ? ' Victoria' : ' Derrota' }}
-                      </span>
+                      </div>
                     </td>
-                    <td class="py-3">
-                      <i class="fas fa-crosshairs me-2"></i>
-                      {{ game.total_moves }}
+                    <td class="py-4">
+                      <div class="moves-counter">
+                        <i class="fas fa-crosshairs me-2 text-info"></i>
+                        {{ game.total_moves }}
+                      </div>
                     </td>
-                    <td class="py-3">
-                      <div class="progress" style="height: 20px; background: rgba(255,255,255,0.1);">
+                    <td class="py-4">
+                      <div class="custom-progress">
                         <div class="progress-bar" 
                              [ngClass]="{
-                               'bg-success': game.accuracy >= 70,
-                               'bg-warning': game.accuracy >= 40 && game.accuracy < 70,
-                               'bg-danger': game.accuracy < 40
+                               'progress-high': game.accuracy >= 70,
+                               'progress-medium': game.accuracy >= 40 && game.accuracy < 70,
+                               'progress-low': game.accuracy < 40
                              }"
                              [style.width.%]="game.accuracy">
-                          {{ game.accuracy }}%
+                          <span class="progress-text">{{ game.accuracy }}%</span>
                         </div>
                       </div>
                     </td>
-                    <td class="py-3">
-                      <button class="btn btn-info btn-sm" (click)="viewGameDetails(game.id)">
+                    <td class="py-4">
+                      <button class="btn custom-btn-details" (click)="viewGameDetails(game.id)">
                         <i class="fas fa-eye me-2"></i>
-                        Ver Detalles
+                        Detalles
                       </button>
                     </td>
                   </tr>
@@ -95,11 +113,15 @@
               </table>
             </div>
 
-            <!-- No Games Message -->
-            <div *ngIf="!loading && !error && gameHistory.length === 0" class="text-center py-5 text-white-50">
-              <i class="fas fa-ship fa-3x mb-3"></i>
-              <h4>No hay batallas registradas</h4>
-              <p>¡Comienza tu primera batalla naval!</p>
+            <!-- Enhanced No Games Message -->
+            <div *ngIf="!loading && !error && gameHistory.length === 0" 
+                 class="text-center py-5 empty-state">
+              <i class="fas fa-ship fa-4x mb-4 text-info"></i>
+              <h4 class="text-white mb-3">No hay batallas registradas</h4>
+              <p class="text-white-50">¡Es hora de zarpar hacia tu primera batalla naval!</p>
+              <button class="btn btn-outline-info mt-3">
+                <i class="fas fa-plus me-2"></i>Nueva Partida
+              </button>
             </div>
           </div>
         </div>
