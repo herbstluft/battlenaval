@@ -101,4 +101,11 @@ export class ApiService {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
   }
+  
+  // Add this method to the ApiService class
+  getGameHistory(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/games-history`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+  }
 }

@@ -78,4 +78,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }); */
  // }
 
+  // Add this method to the DashboardComponent class
+  viewGameHistory(): void {
+    this.router.navigate(['/game-history']);
+  }
 }

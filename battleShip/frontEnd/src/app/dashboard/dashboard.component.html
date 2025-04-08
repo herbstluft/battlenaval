@@ -10,6 +10,7 @@
         <div class="col-md-8 text-center">
           <!-- Tarjeta principal con efecto glassmórfico -->
           <div class="card border-0 bg-transparent" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1);">
+            <!-- Add this after the start game button -->
             <div class="card-body p-5">
               <!-- Icono naval -->
               <div class="mb-4">
@@ -21,11 +22,18 @@
               <p class="lead text-white-50 mb-5">Prepárate para la batalla, almirante. Los mares te esperan.</p>
               
               <!-- Botón de comenzar partida -->
-              <button class="btn btn-lg px-5 py-3 start-button text-white" 
+              <button class="btn btn-lg px-5 py-3 start-button text-white me-3" 
                       style="background: linear-gradient(45deg, #2193b0, #6dd5ed); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
                       (click)="startGame()">
                 <i class="fas fa-play me-2"></i>
                 Comenzar Partida
+              </button>
+              
+              <button class="btn btn-lg px-5 py-3 history-button text-white" 
+                      style="background: linear-gradient(45deg, #4b6cb7, #182848); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
+                      (click)="viewGameHistory()">
+                <i class="fas fa-history me-2"></i>
+                Historial de Partidas
               </button>
             </div>
           </div>

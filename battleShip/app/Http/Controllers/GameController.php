@@ -328,7 +328,49 @@ public function getUserStats()
         'accuracy' => round($accuracy, 1)
     ]);
 }
+
+
+public function getGameHistory()
+{
+    $userId = Auth::id();
+    
+    $games = Game::where(function($query) use ($userId) {
+        $query->where('player1_id', $userId)
+              ->orWhere('player2_id', $userId);
+    })
+    ->where('status', 'finished')
+    ->orderBy('created_at', 'desc')
+    ->get();
+
+    if ($games->isEmpty()) {
+        return response()->json([
+            'message' => 'No hay partidas jugadas',
+            'games' => []
+        ]);
+    }
+
+    $formattedGames = $games->map(function ($game) use ($userId) {
+        $winner = Winner::where('winner_id', $game->winner_id)
+                       ->first();
+
+        return [
+            'id' => $game->id,
+            'date' => $game->created_at->format('Y-m-d H:i:s'),
+            'completed_at' => $game->completed_at ? $game->completed_at->format('Y-m-d H:i:s') : null,
+            'winner_id' => $game->winner_id,
+            'player1_id' => $game->player1_id,
+            'player2_id' => $game->player2_id,
+            'status' => $game->status,
+            'total_moves' => $winner ? $winner->allshots : 0,
+            'accuracy' => $winner ? $winner->presicion : 0,
+            'is_winner' => $game->winner_id === $userId
+        ];
+    });
+
+    return response()->json($formattedGames);
+}
     
 }
+
 
 
