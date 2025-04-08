@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { PusherService } from '../pusher.service';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
+
 
 interface Cell {
   hasShip: boolean;
@@ -23,9 +25,11 @@ interface Cell {
 export class GameBoardComponent implements OnInit, OnDestroy {
 
   private ReadChangeTurnSubscription: Subscription = new Subscription();
-
+  private GameOverSubscription: Subscription = new Subscription();
 
   boardSize = 8;
+  isPlayer1: boolean = false;
+
   myBoard: Cell[][] = [];
   opponentBoard: Cell[][] = [];
   isGameOver = false; // Add this property
@@ -33,7 +37,8 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     totalShots: 0,
     hits: 0,
     misses: 0,
-    winner: ''
+    winner: '',
+    loser: ''
   };
 
   gameId!: number;
@@ -42,9 +47,10 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   error = '';
   token = localStorage.getItem('token');
   playerId!: number; // Para saber si somos player1 o player2
+  statusGame = '';
 
 
-  constructor(private route: ActivatedRoute, private http: HttpClient, private pusherService: PusherService  ) {}
+  constructor(private route: ActivatedRoute, private http: HttpClient, private pusherService: PusherService,  private router: Router) {}
 
   ngOnInit(): void {
     this.gameId = Number(this.route.snapshot.paramMap.get('id'));
@@ -61,6 +67,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       next: (user) => {
         this.playerId = user.id;
         this.subscribeToGameReadChangeTurn();
+        this.subscribeToGameOver();
           
         this.fetchGameState();  // Llamar a fetchGameState solo después de obtener el playerId
       },
@@ -86,7 +93,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   // Modify the attackCell method
   attackCell(row: number, col: number): void {
     if (this.currentTurn !== 'me' || this.isGameOver) {
-      this.message = 'No es tu turno';
       return;
     }
   
@@ -95,7 +101,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       return;
     }
   
-    console.log(`Attacking position: row ${row}, col ${col}`);
     
     this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
       row: row,
@@ -106,7 +111,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       headers: { Authorization: `Bearer ${this.token}` }
     }).subscribe({
       next: (response) => {
-        console.log('Attack response:', response);
         
         const hasShip = this.opponentBoard[row][col].hasShip;
         
@@ -132,10 +136,11 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   // Add this new method to check for game completion
+  // Modify the checkGameOver method
   private checkGameOver(): void {
     let totalShips = 0;
     let hitShips = 0;
-
+  
     for (let i = 0; i < this.boardSize; i++) {
       for (let j = 0; j < this.boardSize; j++) {
         if (this.opponentBoard[i][j].hasShip) {
@@ -146,29 +151,89 @@ export class GameBoardComponent implements OnInit, OnDestroy {
         }
       }
     }
-
+  
     if (totalShips > 0 && totalShips === hitShips) {
       this.isGameOver = true;
       this.gameStats.winner = 'Tú';
+      this.gameStats.loser = 'Oponente';
       this.message = '¡Felicitaciones! Has ganado el juego! 🎉';
+      
+      // Notify the server about game over with attack details
+      this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/gameover`, {
+        winnerId: this.playerId,
+        gameStats: {
+          player_shots: !this.isPlayer1 ? this.gameStats.totalShots : 0,
+          hits: this.gameStats.hits,
+          misses: this.gameStats.misses,
+          accuracy: this.gameStats.totalShots > 0 ? 
+            (this.gameStats.hits / this.gameStats.totalShots * 100).toFixed(1) : 0,
+          total_moves: this.gameStats.totalShots
+        }
+      }, {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).subscribe({
+        next: (response) => {
+          console.log('Game statistics saved:', response);
+        },
+        error: (err) => {
+          console.error('Error saving game statistics:', err);
+        }
+      });
     }
   }
 
-  // Modify updateBoards to check for game over when receiving updates
+  // Add method to handle opponent's victory
+  // Modify handleOpponentVictory method
+  private handleOpponentVictory(): void {
+    this.isGameOver = true;
+    this.gameStats.winner = 'Oponente';
+    this.gameStats.loser = 'Tú';
+    this.message = 'Game Over - ¡Ha ganado tu oponente! 🏆';
+    this.currentTurn = '';
+  
+    // Send game statistics even when losing
+    this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/gameover`, {
+      winnerId: this.playerId,
+      gameStats: {
+        player1_shots: this.isPlayer1 ? this.gameStats.totalShots : 0,
+        player2_shots: !this.isPlayer1 ? this.gameStats.totalShots : 0,
+        hits: this.gameStats.hits,
+        misses: this.gameStats.misses,
+        accuracy: this.gameStats.totalShots > 0 ? 
+          (this.gameStats.hits / this.gameStats.totalShots * 100).toFixed(1) : 0,
+        total_moves: this.gameStats.totalShots
+      }
+    }, {
+      headers: { Authorization: `Bearer ${this.token}` }
+    }).subscribe({
+      next: (response) => {
+        console.log('Game statistics saved:', response);
+      },
+      error: (err) => {
+        console.error('Error saving game statistics:', err);
+      }
+    });
+  }
+
+  // Modify updateBoards method to check for game over state
   private updateBoards(gameData: any): void {
     if (!gameData) {
       console.error('Game data is undefined');
       return;
     }
-  
+
+    // Add game over check
+    if (gameData.isGameOver) {
+      this.isGameOver = true;
+      if (gameData.winnerId !== this.playerId) {
+        this.handleOpponentVictory();
+      }
+    }
+
     const isPlayer1 = this.playerId === gameData.player1_id;
     
     // Keep existing board if new data doesn't include board information
     if (gameData.myBoard && gameData.opponentBoard) {
-      console.log('Board update - Player:', this.playerId, 'Is Player1:', isPlayer1);
-      console.log('My board data:', gameData.myBoard);
-      console.log('Opponent board data:', gameData.opponentBoard);
-  
       // Get the correct boards using the actual property names
       const myBoardData = isPlayer1 ? gameData.myBoard : gameData.opponentBoard;
       const opponentBoardData = isPlayer1 ? gameData.opponentBoard : gameData.myBoard;
@@ -182,7 +247,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     const turnId = gameData.currentTurn || gameData.current_turn;
     if (turnId !== undefined) {
       this.currentTurn = turnId === this.playerId ? 'me' : 'opponent';
-      console.log('Turn updated:', this.currentTurn, 'Current player:', this.playerId, 'Turn ID:', turnId);
     }
   }
 
@@ -211,6 +275,26 @@ export class GameBoardComponent implements OnInit, OnDestroy {
         }
       );
   }
+  private subscribeToGameOver(): void {
+    this.GameOverSubscription?.unsubscribe();
+    this.GameOverSubscription = this.pusherService
+      .subscribeToChannel('game-channel', 'game.gameOver')
+      .subscribe(
+        (data: any) => {
+          if(data.game.id === this.gameId){
+            this.currentTurn = '';
+            this.isGameOver = true;
+
+            
+          }
+        },
+        error => {
+          console.error('Error en Pusher:', error);
+          this.error = 'Error de conexión con el servidor';
+        }
+      );
+  }
+
   private initializeBoardFromData(boardData: any[][] | undefined, isOpponentBoard = false): Cell[][] {
     if (!boardData || !Array.isArray(boardData)) {
       console.error('Board data is invalid:', boardData);
@@ -254,6 +338,9 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     });
   }
   
+  home(){
+    this.router.navigate(['/dashboard']);
+  }
   ngOnDestroy(): void {
     if (this.ReadChangeTurnSubscription) {
       this.ReadChangeTurnSubscription.unsubscribe();

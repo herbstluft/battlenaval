@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Events\MyEvent;
 use App\Events\ReadCreated;
 use App\Events\ReadChangeTurn;
+use App\Events\GameOver;
+use App\Models\Winner;
 
 class GameController extends Controller
 {
@@ -127,7 +129,7 @@ class GameController extends Controller
     private function initializeRandomBoard()
     {
         $board = [];
-        $shipsToPlace = 15; // Número total de barcos
+        $shipsToPlace = 1; // Número total de barcos
         
         // Crear un tablero vacío de 8x8
         for ($i = 0; $i < 8; $i++) {
@@ -260,6 +262,44 @@ class GameController extends Controller
         ]);
     }
     
+    public function gameOver(Request $request, $id)
+    {
+        try {
+            $game = Game::findOrFail($id);
+            $winnerId = $request->input('winnerId');
+            $gameStats = $request->input('gameStats');
+    
+            // Update game status
+            $game->update([
+                'status' => 'finished',
+                'winner_id' => $winnerId,
+                'updated_at' => now()
+            ]);
+
+            $winner = Winner::create([
+                'winner_id' => $winnerId,
+                'allshots' => $gameStats['total_moves'],
+                'asserts' => $gameStats['hits'],
+                'fails' => $gameStats['misses'],
+                'presicion' => $gameStats['accuracy'],
+                'boats_hints' => $gameStats['hits'] // Since each hit is a boat in this case
+            ]);
+
+            event(new GameOver($game));
+            
+            return response()->json([
+                'message' => 'Game completed successfully',
+                'game' => $game,
+                'winner_id' => $winnerId,
+                'statistics' => $gameStats
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating game status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     
     

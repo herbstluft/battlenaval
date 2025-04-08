@@ -16,9 +16,7 @@ class Game extends Model
         'current_turn',
         'winner_id',
         'player1_board',
-        'player2_board',
-        'player1_shots',
-        'player2_shots'
+        'player2_board'
     ];
 
     protected $casts = [

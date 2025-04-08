@@ -46,6 +46,9 @@ export class PusherService {
           // Endpoint para ver los juegos disponibles
           authEndpoint = `http://127.0.0.1:8000/api/games`;
         }
+        else if (eventName === 'game.gameOver'){
+          authEndpoint = `http:://127.0.0.1:8000/api/games/${params.gameId}/gameover`;
+        }
       } else {
         // Agregar otros canales si es necesario con reglas de autenticación adicionales
         authEndpoint = `http://127.0.0.1:8000/api/${channelName}/auth`;
