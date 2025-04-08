@@ -101,6 +101,8 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       return;
     }
   
+    console.log("row", row);
+    console.log("col", col);
     
     this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
       row: row,
