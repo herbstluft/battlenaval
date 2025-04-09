@@ -19,7 +19,7 @@ return [
     'allowed_methods' => ['*'], // Permitir todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
     'allowed_origins' => [
         'http://localhost:4200',
-        'http://192.168.125.40:4200'  // Add your network IP here
+        'http://192.168.1.2:4200'  // Add your network IP here
     ], // Permitir solicitudes desde tu frontend (Angular)
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'], // Permitir cualquier cabecera

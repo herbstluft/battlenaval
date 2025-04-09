@@ -437,8 +437,27 @@ public function getGameDetails($id)
 
     return response()->json($response);
 }
+
+public function checkUserActiveGame(Request $request)
+{
+    $user = $request->user();
     
+    $activeGame = Game::where(function($query) use ($user) {
+        $query->where('player1_id', $user->id)
+              ->orWhere('player2_id', $user->id);
+    })
+    ->where('status', '!=', 'finished')
+    ->first();
+
+    return response()->json([
+        'hasGame' => !is_null($activeGame),
+        'gameId' => $activeGame ? $activeGame->id : null
+    ]);
 }
+
+
+}
+
 
 
 

@@ -40,6 +40,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     winner: '',
     loser: ''
   };
+  isLoading = true;
 
   gameId!: number;
   currentTurn!: string; // 'me' or 'opponent'
@@ -70,6 +71,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
         this.subscribeToGameOver();
           
         this.fetchGameState();  // Llamar a fetchGameState solo después de obtener el playerId
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error al obtener ID de usuario:', err);

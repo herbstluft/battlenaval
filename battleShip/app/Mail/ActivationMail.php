@@ -33,11 +33,14 @@ class ActivationMail extends Mailable
      */
     public function build()
     {
-        $signedUrl = URL::temporarySignedRoute(
-            'verify.account',
-            now()->addMinutes(1), 
-            ['code' => $this->user->activation_code]
-        );
+
+    URL::forceRootUrl(config('app.url'));
+
+    $signedUrl = URL::temporarySignedRoute(
+        'verify.account',
+        now(5)->addMinutes(1),
+        ['code' => $this->user->activation_code]
+    );
     
         return $this->subject('Activación de cuenta - Batalla Naval')
             ->html('

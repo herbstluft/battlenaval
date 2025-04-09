@@ -1,5 +1,15 @@
 
 <div class="game-container">
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <h3>Cargando Partida...</h3>
+    </div>
+  </div>
+
+  <!-- Game content -->
+  <div class="game-content" [class.loading]="isLoading">
 
   <!-- Add game statistics -->
   <div class="game-stats" *ngIf="isGameOver">
