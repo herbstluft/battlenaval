@@ -24,7 +24,7 @@ class UserController extends Controller
 
 
         $validteUser = User::where('email', $request->email)->first();
-        if($validteUser->is_active == 1){
+        if(!empty($validteUser->is_active) && $validteUser->is_active == 1  ){
             if (Auth::attempt($validated, true)) {
                 $user = Auth::user();
                 $token = $user->createToken('auth-token')->plainTextToken;
@@ -39,9 +39,14 @@ class UserController extends Controller
             return response()->json(['message' => 'Credenciales incorrectas.'], 401);
 
         }
+        elseif($validteUser && $validteUser->is_active == 0 || $validteUser && $validteUser->is_active == null ){
+            return response()->json([
+              'message' => 'Este usuario no está activado.',
+            ], 422);
+        }
         else{
             return response()->json([
-               'message' => 'Este usuario no está activado.',
+               'message' => 'Este usuario no esta registrado.',
             ], 422);
         }
     

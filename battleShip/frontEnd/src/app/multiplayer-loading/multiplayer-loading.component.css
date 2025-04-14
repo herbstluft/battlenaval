@@ -304,3 +304,25 @@
   color: #17a2b8;
   border: 1px solid #17a2b8;
 }
+
+.active-game {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.custom-btn-resume {
+  background-color: #ffc107;
+  color: #000;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.custom-btn-resume:hover {
+  background-color: #ffca2c;
+  transform: translateY(-2px);
+}
+
+.game-status {
+  color: #ffc107;
+  font-weight: 500;
+}

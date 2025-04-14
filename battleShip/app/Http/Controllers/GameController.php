@@ -23,16 +23,48 @@ class GameController extends Controller
 
     public function available()
     {
+        $userId = Auth::id();
+
+        // Get games where user is player1 and in progress
+        $myGames = Game::where('player1_id', $userId) ->Orwhere('player2_id', $userId)
+            ->where('status', '!=', 'finished')
+            ->with(['player1', 'player2'])
+            ->get();
+
+        // Get available games to join (waiting and no player2)
         $availableGames = Game::where('status', 'waiting')
             ->whereNull('player2_id')
+            ->where('player1_id', '!=', $userId) // Exclude user's own games
             ->with('player1')
             ->get();
 
-        return response()->json($availableGames);
+        return response()->json([
+            'my_games' => $myGames,
+            'available_games' => $availableGames
+        ]);
     }
 
     public function create(Request $request)
     {
+        // Check if user has any active game (waiting or in_progress)
+        $activeGame = Game::where('status', '!=', 'finished')
+            ->where(function($query) {
+                $query->where('player1_id', Auth::id())
+                      ->orWhere('player2_id', Auth::id());
+            })
+            ->first();
+
+        if ($activeGame) {
+            $message = $activeGame->status === 'waiting' 
+                ? 'Ya estás esperando una partida en curso.'
+                : 'Ya tienes una partida en progreso.';
+                
+            return response()->json([
+                'message' => $message,
+                'game' => $activeGame
+            ], 400);
+        }
+
         $game = Game::create([
             'player1_id' => Auth::id(),
             'status' => 'waiting',
@@ -43,27 +75,71 @@ class GameController extends Controller
 
         $game->load('player1');
 
-
         event(new ReadCreated($game));
         return response()->json($game);
     }
 
-    public function join(Game $game)
-    {
-        if (empty(Auth::user())) {
-            return response()->json(['message' => 'No puedes unirte a esta partida'], 403);
-        }
+public function join(Game $game)
+{
+    $currentUser = Auth::id();
+    
+    if (empty($currentUser)) {
+        return response()->json(['message' => 'No puedes unirte a esta partida'], 403);
+    }
 
+    // Check if user is already part of this game
+    if ($currentUser === $game->player1_id || $currentUser === $game->player2_id) {
+        // Load the game state and return it
+        $game->load(['player1', 'player2']);
+        
+        // Get all previous attacks
+        $attacks = Attack::where('game_id', $game->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'message' => 'Volviendo a la partida',
+            'status' => 'rejoined',
+            'game' => $game,
+            'attacks' => $attacks
+        ]);
+    }
+
+    // Check if game is available
+    if ($game->status !== 'waiting' || $game->player2_id !== null) {
+        return response()->json([
+            'message' => 'Esta partida ya no está disponible',
+            'status' => 'unavailable'
+        ], 400);
+    }
+
+    try {
+        // Join as new player2
         $game->update([
-            'player2_id' => Auth::id(),
+            'player2_id' => $currentUser,
             'player2_board' => $this->initializeRandomBoard(),
             'status' => 'in_progress',
-            'current_turn' => $game->player1_id
+            'current_turn' => $game->player1_id,
+            'player2_shots' => []
         ]);
 
+        $game->load(['player1', 'player2']);
+        
         event(new MyEvent($game));
-        return response()->json($game->load(['player1', 'player2']));
-     }
+        
+        return response()->json([
+            'message' => 'Te has unido a la partida',
+            'status' => 'joined',
+            'game' => $game
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error joining game: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Error al unirse a la partida',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
         
         public function status(Game $game)
     {
@@ -76,7 +152,6 @@ class GameController extends Controller
   
     public function getBoard(Game $game)
     {
-        // Verificar si el usuario autenticado es uno de los jugadores
         $userId = Auth::id();
         if ($userId !== $game->player1_id && $userId !== $game->player2_id) {
             return response()->json(['message' => 'No tienes permiso para ver este tablero'], 403);
@@ -116,7 +191,7 @@ class GameController extends Controller
                 }
             }
         }
-        
+
         return response()->json([
             'player_board' => $playerBoard,
             'opponent_shots' => $opponentShots,
@@ -201,19 +276,19 @@ class GameController extends Controller
     }
     
     public function attackCell(Request $request, $gameId)
-{
-    $game = Game::findOrFail($gameId);
-
+    {
+        $game = Game::findOrFail($gameId);
+        
     // Validar la entrada
-    $validated = $request->validate([
-        'row' => 'required|integer|min:0|max:7',
-        'col' => 'required|integer|min:0|max:7',
-        'isHit' =>'required|boolean'
-    ]);
+        $validated = $request->validate([
+            'row' => 'required|integer|min:0|max:7',
+            'col' => 'required|integer|min:0|max:7',
+            'isHit' =>'required|boolean'
+        ]);
 
     // Determinar quién es el atacante y el oponente
-    $attacker = $game->current_turn === $game->player1_id ? $game->player1_id : $game->player2_id;
-    $opponent = $game->current_turn === $game->player1_id ? $game->player2_id : $game->player1_id;
+        $attacker = $game->current_turn === $game->player1_id ? $game->player1_id : $game->player2_id;
+        $opponent = $game->current_turn === $game->player1_id ? $game->player2_id : $game->player1_id;
 
     if ($attacker === $opponent) {
         return response()->json([
@@ -245,18 +320,18 @@ class GameController extends Controller
 
 
     $hit = is_array($cell) && isset($cell['hasShip']) ? $cell['hasShip'] : false;
-
+        
     // Registrar el ataque
-    $attack = Attack::create([
-        'game_id' => $gameId,
-        'attacker_id' => $attacker,
-        'target_id' => $opponent,
+        $attack = Attack::create([
+            'game_id' => $gameId,
+            'attacker_id' => $attacker,
+            'target_id' => $opponent,
         'row' => $row,
         'col' => $col,
         'is_hit' => $accert,
-        'turn_number' => Attack::where('game_id', $gameId)->count() + 1,
-        'created_at' => now()
-    ]);
+            'turn_number' => Attack::where('game_id', $gameId)->count() + 1,
+            'created_at' => now()
+        ]);
 
     // Actualizar la celda atacada en el tablero del oponente
     $opponentBoard[$row][$col] = [
@@ -269,19 +344,19 @@ class GameController extends Controller
     $game->current_turn = $attacker === $game->player1_id ? $game->player2_id : $game->player1_id;
 
     // Guardar los cambios del tablero
-    $game->update([
+        $game->update([
         $opponent . '_board' => json_encode($opponentBoard),
-    ]);
+        ]);
 
     // Notificar el cambio de turno
-    event(new ReadChangeTurn($game));
+        event(new ReadChangeTurn($game));
 
-    return response()->json([
+        return response()->json([
         'message' => $hit ? '¡Acertaste!' : 'Fallaste.',
         'hit' => $hit,
-        'attack_id' => $attack->_id
-    ]);
-}
+            'attack_id' => $attack->_id
+        ]);
+    }
 
     
     public function gameOver(Request $request, $id)

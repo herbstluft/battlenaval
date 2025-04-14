@@ -341,7 +341,20 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     });
   }
   
-  home(){
+  joinGame(gameId: number) {
+    this.http.post<any>(`${environment.apiUrl}/games/${gameId}/join`, {}, {
+      headers: { Authorization: `Bearer ${this.token}` }
+    }).subscribe({
+      next: (response) => {
+        this.router.navigate(['/game', gameId]);
+      },
+      error: (err) => {
+        console.error('Error joining game:', err);
+      }
+    });
+  }
+
+  home() {
     this.router.navigate(['/dashboard']);
   }
   ngOnDestroy(): void {

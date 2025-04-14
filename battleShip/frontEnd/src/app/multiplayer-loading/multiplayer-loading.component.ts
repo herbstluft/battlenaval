@@ -35,6 +35,7 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
   message: string | null = null;
   private boardSize = 8;
   private numShips = 15;
+  myActiveGames: any[] = []; // Add this property
 
   constructor(
     private http: HttpClient,
@@ -81,11 +82,12 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
     this.error = '';
     const token = localStorage.getItem('token');
 
-    this.http.get<any[]>(`${environment.apiUrl}/games/available`, {
+    this.http.get<any>(`${environment.apiUrl}/games/available`, {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe({
-      next: (games) => {
-        this.availableGames = games;
+      next: (response) => {
+        this.availableGames = response.available_games || [];
+        this.myActiveGames = response.my_games || [];
         this.loading = false;
       },
       error: (err) => {
@@ -115,7 +117,7 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
         this.subscribeToGameJoinedEvents(game.id);
       },
       error: (err) => {
-        this.error = 'Error al crear la partida';
+        this.error = err.error.message || 'Error al crear la partida';
         this.creatingGame = false;
         console.error('Error creating game:', err);
       }
@@ -131,13 +133,32 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .subscribe({
-      next: (game) => {
-        this.router.navigate(['/game', game.id]);
+      next: (response) => {
+        switch (response.status) {
+          case 'rejoined':
+          case 'joined':
+            // Navigate to game for both joining and rejoining
+            this.router.navigate(['/game', response.game.id]);
+            break;
+          
+          case 'waiting':
+            // If we're the creator, stay in waiting state
+            this.currentGameId = response.game.id;
+            this.waitingForPlayer = true;
+            this.subscribeToGameJoinedEvents(response.game.id);
+            break;
+          
+          case 'full':
+            this.error = response.message;
+            this.loadAvailableGames();
+            break;
+        }
+        this.joiningGame = false;
       },
       error: (err) => {
-        this.error = 'Error al unirse a la partida';
+        this.error = err.error?.message || 'Error al unirse a la partida';
         this.joiningGame = false;
-        console.error('Error joining game:', err);
+        this.loadAvailableGames();
       }
     });
   }

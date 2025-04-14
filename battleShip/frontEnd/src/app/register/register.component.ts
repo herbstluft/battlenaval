@@ -64,8 +64,7 @@ export class RegisterComponent {
 
   clear(){
     this.errorMessage = '';
-    this.name = '';
-    this.email = '';
+
     this.password = '';
     this.password_confirmation = '';
   }
