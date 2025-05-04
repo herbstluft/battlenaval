@@ -28,6 +28,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   private GameOverSubscription: Subscription = new Subscription();
 
   boardSize = 8;
+  shipsRemaining: number = 0;
   isPlayer1: boolean = false;
 
   myBoard: Cell[][] = [];
@@ -152,6 +153,11 @@ export class GameBoardComponent implements OnInit, OnDestroy {
         
         if (hasShip) {
           this.message = '¡Le diste a un barco! 🎯';
+
+          setTimeout(() => {
+            this.message = '';
+          }, 5000); 
+
           this.opponentBoard[row][col].isHit = true;
           this.opponentBoard[row][col].hasShip = true;
           this.gameStats.hits++;
@@ -160,6 +166,10 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
         } else {
           this.message = 'Agua... 💦';
+          setTimeout(() => {
+            this.message = '';
+          }, 5000); 
+
           this.opponentBoard[row][col].isMiss = true;
           this.gameStats.misses++;
         }
@@ -391,6 +401,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
             }
           }
         }
+        
 
         // Actualizar las estadísticas del juego
         this.gameStats = {
@@ -401,7 +412,18 @@ export class GameBoardComponent implements OnInit, OnDestroy {
           loser: this.gameStats.loser
         };
 
-        console.log(this.gameStats);
+        let remainingShips = 0;
+        for (let i = 0; i < this.boardSize; i++) {
+          for (let j = 0; j < this.boardSize; j++) {
+            const cell = this.myBoard[i][j];
+            if (cell.hasShip && !cell.isHit) {
+              remainingShips++;
+            }
+          }
+        }
+        this.shipsRemaining = remainingShips;
+
+
       },
       error: (err) => {
         console.error('Error al cargar el estado del juego:', err);
