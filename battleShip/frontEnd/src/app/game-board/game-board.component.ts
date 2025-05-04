@@ -69,14 +69,32 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (user) => {
         this.playerId = user.id;
-        this.subscribeToGameReadChangeTurn();
-        this.subscribeToGameOver();
-          
-        this.fetchGameState();  // Llamar a fetchGameState solo después de obtener el playerId
-        this.isLoading = false;
+        // Primero verificar si el usuario tiene acceso al juego
+        this.http.get<any>(`${environment.apiUrl}/games/${this.gameId}`, {
+          headers: { Authorization: `Bearer ${this.token}` }
+        }).subscribe({
+          next: (data) => {
+            if (data.player1_id !== this.playerId && data.player2_id !== this.playerId) {
+              this.message = 'No tienes permiso para acceder a esta partida';
+              this.router.navigate(['/multiplayer-loading']);
+              return;
+            }
+            // Solo si el usuario tiene acceso, continuar con la inicialización
+            this.subscribeToGameReadChangeTurn();
+            this.subscribeToGameOver();
+            this.fetchGameState();
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('Error al verificar acceso al juego:', err);
+            this.message = 'Error al verificar acceso al juego';
+            this.router.navigate(['/multiplayer-loading']);
+          }
+        });
       },
       error: (err) => {
         console.error('Error al obtener ID de usuario:', err);
+        this.router.navigate(['/multiplayer-loading']);
       }
     });
   }
@@ -356,9 +374,10 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       headers: { Authorization: `Bearer ${this.token}` }
     }).subscribe({
       next: (data) => {
-        this.updateBoards(data);  // Use updateBoards instead of updateGameState
 
-           // Calcular estadísticas basadas en el tablero del oponente
+        this.updateBoards(data);
+
+        // Calcular estadísticas basadas en el tablero del oponente
         let hits = 0;
         let misses = 0;
 
@@ -387,6 +406,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error al cargar el estado del juego:', err);
         this.message = 'Error al cargar el estado del juego';
+        this.router.navigate(['/dashboard']);
       }
     });
   }
