@@ -50,8 +50,6 @@
                     <th class="py-4">Fecha</th>
                     <th class="py-4">Estado</th>
                     <th class="py-4">Resultado</th>
-                    <th class="py-4">Movimientos</th>
-                    <th class="py-4">Precisión</th>
                     <th class="py-4">Acciones</th>
                   </tr>
                 </thead>
@@ -81,25 +79,6 @@
                           'fa-times-circle': game.winner_id !== currentUserId
                         }"></i>
                         {{ game.winner_id === currentUserId ? ' Victoria' : ' Derrota' }}
-                      </div>
-                    </td>
-                    <td class="py-4">
-                      <div class="moves-counter">
-                        <i class="fas fa-crosshairs me-2 text-info"></i>
-                        {{ game.total_moves }}
-                      </div>
-                    </td>
-                    <td class="py-4">
-                      <div class="custom-progress">
-                        <div class="progress-bar" 
-                             [ngClass]="{
-                               'progress-high': game.accuracy >= 70,
-                               'progress-medium': game.accuracy >= 40 && game.accuracy < 70,
-                               'progress-low': game.accuracy < 40
-                             }"
-                             [style.width.%]="game.accuracy">
-                          <span class="progress-text">{{ game.accuracy }}%</span>
-                        </div>
                       </div>
                     </td>
                     <td class="py-4">

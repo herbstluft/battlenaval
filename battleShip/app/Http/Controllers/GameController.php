@@ -26,11 +26,13 @@ class GameController extends Controller
         $userId = Auth::id();
 
         // Get games where user is player1 and in progress
-        $myGames = Game::where('player1_id', $userId) ->Orwhere('player2_id', $userId)
-            ->where('status', '!=', 'finished')
+        $myGames = Game::where('status', '=', 'in_progress')
+            ->where(function($query) use ($userId) {
+                $query->where('player1_id', $userId)
+                      ->orWhere('player2_id', $userId);
+            })
             ->with(['player1', 'player2'])
             ->get();
-
         // Get available games to join (waiting and no player2)
         $availableGames = Game::where('status', 'waiting')
             ->whereNull('player2_id')
@@ -283,10 +285,55 @@ public function join(Game $game)
         $validated = $request->validate([
             'row' => 'required|integer|min:0|max:7',
             'col' => 'required|integer|min:0|max:7',
+            'index' => 'required',
+            'playerId' => 'required',
             'isHit' =>'required|boolean'
         ]);
 
-    // Determinar quién es el atacante y el oponente
+
+// Actualizar tablero de oponente
+$playerAttack = $validated['playerId'];
+$indexAttack = $validated['index'];
+
+// Query to get opponent's board based on player ID
+$game = Game::findOrFail($gameId);
+
+
+// Actualiza el barco al que se le dio
+                // Determine which board to return based on the attacking player
+                $opponentBoard = $playerAttack === $game->player1_id 
+                    ? $game->player1_board  // If player1 is attacking, get player2's board
+                    : $game->player2_board; // If player2 is attacking, get player1's board
+
+                // Convert board to array if it's a JSON string
+                if (is_string($opponentBoard)) {
+                    $opponentBoard = json_decode($opponentBoard, true);
+                }
+
+                // Calculate row and column for index
+                $row = floor($indexAttack / 8);
+                $col = $indexAttack % 8;
+
+                // Update the cell at the target position
+                $opponentBoard[$row][$col] = [
+                    'hasShip' => $validated['isHit'], // Set hasShip based on hit validation
+                    'isHit' => $validated['isHit'],   // Set hit status
+                    'isMiss' => !$validated['isHit']  // Set miss status (opposite of hit)
+                ];
+
+                // Save the updated board back to the game
+                if ($playerAttack === $game->player1_id) {
+                    $game->player1_board = $opponentBoard;
+                } else {
+                    $game->player2_board = $opponentBoard;
+                }
+                $game->save();
+// Actualiza el barco al que se le dio
+
+
+$targetCell = $opponentBoard[$row][$col];
+
+        // Determinar quién es el atacante y el oponente
         $attacker = $game->current_turn === $game->player1_id ? $game->player1_id : $game->player2_id;
         $opponent = $game->current_turn === $game->player1_id ? $game->player2_id : $game->player1_id;
 

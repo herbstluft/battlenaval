@@ -40,7 +40,7 @@
           
           <!-- Estadísticas del jugador -->
           <div class="row mt-4 g-3">
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
                 <div class="card-body">
                   <i class="fas fa-trophy mb-3"></i>
@@ -54,7 +54,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
                 <div class="card-body">
                   <i class="fas fa-gamepad mb-3"></i>
@@ -68,20 +68,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
-                <div class="card-body">
-                  <i class="fas fa-star mb-3"></i>
-                  <h5>Precisión</h5>
-                  <p class="mb-0 display-6">
-                    <span *ngIf="loading">
-                      <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                    <span *ngIf="!loading">{{playerStats.accuracy}}%</span>
-                  </p>
-                </div>
-              </div>
-            </div>
+   
           </div>
         </div>
       </div>

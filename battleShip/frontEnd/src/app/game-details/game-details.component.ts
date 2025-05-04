@@ -60,6 +60,20 @@ export class GameDetailsComponent implements OnInit {
     this.loading = true;
     this.apiService.getGameDetails(this.gameId).subscribe({
       next: (details) => {
+        // Calculate total moves and accuracy from attacks
+        if (details.attacks) {
+          const playerAttacks = details.attacks.filter((attack: { attacker_id: number }) => 
+            attack.attacker_id === (details.player_role === 'player1' ? details.player1_id : details.player2_id)
+          );
+          
+          details.total_moves = playerAttacks.length;
+          details.hits = playerAttacks.filter((attack: { is_hit: boolean }) => attack.is_hit).length;
+          details.misses = playerAttacks.filter((attack: { is_hit: boolean }) => !attack.is_hit).length;
+          details.accuracy = details.total_moves > 0 
+            ? (details.hits / details.total_moves) * 100 
+            : 0;
+        }
+
         this.gameDetails = details;
         this.loading = false;
       },

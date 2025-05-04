@@ -32,6 +32,8 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   myBoard: Cell[][] = [];
   opponentBoard: Cell[][] = [];
+  showHitAnimation = false;
+
   isGameOver = false; // Add this property
   gameStats = {
     totalShots: 0,
@@ -79,6 +81,12 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     });
   }
   
+  triggerHitAnimation(): void {
+    this.showHitAnimation = true;
+    setTimeout(() => {
+      this.showHitAnimation = false;
+    }, 2000); // dura 2 segundos
+  }
 
 
   createEmptyBoard(): Cell[][] {
@@ -93,20 +101,27 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   // Modify the attackCell method
-  attackCell(row: number, col: number): void {
+  attackCell(index: number): void {
+
+
+    console.log(index);
     if (this.currentTurn !== 'me' || this.isGameOver) {
       return;
     }
+  
+    // Calculate row and column from index
+    const row = Math.floor(index / this.boardSize);
+    const col = index % this.boardSize;
   
     if (this.opponentBoard[row][col].isHit || this.opponentBoard[row][col].isMiss) {
       this.message = 'Ya atacaste esta celda';
       return;
     }
   
-    
     this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
-      row: row,
+      index: index,  // Send the index instead of row/col
       col: col,
+      row: row,
       isHit: this.opponentBoard[row][col].hasShip,
       playerId: this.playerId,
       gameId: this.gameId
@@ -122,14 +137,18 @@ export class GameBoardComponent implements OnInit, OnDestroy {
           this.opponentBoard[row][col].isHit = true;
           this.opponentBoard[row][col].hasShip = true;
           this.gameStats.hits++;
+
+          this.triggerHitAnimation(); // <- Aquí se activa la animación
+
         } else {
           this.message = 'Agua... 💦';
           this.opponentBoard[row][col].isMiss = true;
           this.gameStats.misses++;
         }
-        
+  
         this.gameStats.totalShots++;
         this.checkGameOver();
+        this.fetchGameState();
       },
       error: (err) => {
         console.error('Error al atacar:', err);
@@ -241,9 +260,11 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       const myBoardData = isPlayer1 ? gameData.myBoard : gameData.opponentBoard;
       const opponentBoardData = isPlayer1 ? gameData.opponentBoard : gameData.myBoard;
       
+      console.log("myBoardData: ", myBoardData);
       // Update boards only if we have valid board data
       this.myBoard = this.initializeBoardFromData(myBoardData, false);
       this.opponentBoard = this.initializeBoardFromData(opponentBoardData, true);
+      console.log("opponentBoard;", this.opponentBoard);
     }
       
     // Update turn based on either currentTurn or current_turn
@@ -270,6 +291,9 @@ export class GameBoardComponent implements OnInit, OnDestroy {
               ...data.game,
               current_turn: data.game.current_turn
             });
+
+            this.fetchGameState();
+
           }
         },
         error => {
@@ -333,6 +357,32 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (data) => {
         this.updateBoards(data);  // Use updateBoards instead of updateGameState
+
+           // Calcular estadísticas basadas en el tablero del oponente
+        let hits = 0;
+        let misses = 0;
+
+        for (let i = 0; i < this.boardSize; i++) {
+          for (let j = 0; j < this.boardSize; j++) {
+            if (this.opponentBoard[i][j].isHit) {
+              hits++;
+            }
+            if (this.opponentBoard[i][j].isMiss) {
+              misses++;
+            }
+          }
+        }
+
+        // Actualizar las estadísticas del juego
+        this.gameStats = {
+          totalShots: hits + misses,
+          hits: hits,
+          misses: misses,
+          winner: this.gameStats.winner,
+          loser: this.gameStats.loser
+        };
+
+        console.log(this.gameStats);
       },
       error: (err) => {
         console.error('Error al cargar el estado del juego:', err);
