@@ -1,23 +1,45 @@
-@keyframes wave {
-    0% { background-position: 0 bottom; }
-    100% { background-position: 100% bottom; }
-  }
-  
-  .text-glow {
-    text-shadow: 0 0 10px rgba(255,255,255,0.5);
-  }
-  
-  .start-button {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .start-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  }
-  
-  @keyframes waveGradient {
-    0% { opacity: 0.1; }
-    50% { opacity: 0.2; }
-    100% { opacity: 0.1; }
-  }
+.text-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.start-button {
+  background: linear-gradient(45deg, #2193b0, #6dd5ed);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.start-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.history-button {
+  background: linear-gradient(45deg, #4b6cb7, #182848);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+}
+
+.glass-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+}
+
+.wave-overlay {
+  background: linear-gradient(0deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  animation: waveGradient 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes waveGradient {
+  0% { opacity: 0.05; }
+  50% { opacity: 0.15; }
+  100% { opacity: 0.05; }
+}

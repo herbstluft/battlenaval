@@ -1,76 +1,72 @@
 <app-navbar></app-navbar>
 
-<div class="container-fluid vh-100 p-0" style="background: linear-gradient(135deg, #1a2a6c, #2a4858, #141E30)">
-  <div class="position-relative h-100 d-flex align-items-center justify-content-center">
-    <!-- Efecto de olas con gradiente -->
-    <div class="position-absolute w-100 h-100" style="background: linear-gradient(0deg, rgba(255,255,255,0.1) 0%, transparent 50%); animation: waveGradient 3s ease-in-out infinite;"></div>
-    
-    <div class="container position-relative">
-      <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-          <!-- Tarjeta principal con efecto glassmórfico -->
-          <div class="card border-0 bg-transparent" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1);">
-            <!-- Add this after the start game button -->
-            <div class="card-body p-5">
-              <!-- Icono naval -->
-              <div class="mb-4" >
-                <i class="fas fa-anchor fa-4x text-white"></i>
-              </div>
-              
-              <!-- Título y subtítulo -->
-              <h1 class="display-4 text-white mb-3 text-glow">¡Bienvenido a Batalla Naval!</h1>
-              <p class="lead text-white-50 mb-5">Prepárate para la batalla, almirante. Los mares te esperan.</p>
-              
-              <!-- Botón de comenzar partida -->
-              <button class="btn btn-lg px-5 py-3 start-button text-white me-3" 
-                      style="background: linear-gradient(45deg, #2193b0, #6dd5ed); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px;"
+<div class="container-fluid min-vh-100 p-0 d-flex flex-column justify-content-center align-items-center"
+     style="background: linear-gradient(135deg, #1a2a6c, #2a4858, #141E30); position: relative; overflow: hidden;">
+
+  <!-- Efecto de olas animado -->
+  <div class="position-absolute top-0 start-0 w-100 h-100 wave-overlay"></div>
+
+  <div class="container py-5 position-relative z-1">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8 text-center">
+        <div class="card border-0 bg-transparent glass-card p-4 p-md-5">
+          <div class="card-body">
+
+            <!-- Ícono naval -->
+            <div class="mb-4">
+              <i class="fas fa-anchor fa-3x fa-lg text-white"></i>
+            </div>
+
+            <!-- Título -->
+            <h1 class="display-5 fw-bold text-white text-glow">¡Bienvenido a Batalla Naval!</h1>
+            <p class="lead text-white-50 mb-4">Prepárate para la batalla, almirante. Los mares te esperan.</p>
+
+            <!-- Botones -->
+            <div class="d-grid gap-3 d-sm-flex justify-content-center">
+              <button class="btn btn-lg start-button text-white"
                       (click)="startGame()">
                 <i class="fas fa-play me-2"></i>
                 Comenzar Partida
               </button>
-              
-              <button class="btn btn-lg px-5 py-3 history-button text-white" 
-                      style="background: linear-gradient(45deg, #4b6cb7, #182848); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
+
+              <button class="btn btn-lg history-button text-white"
                       (click)="viewGameHistory()">
                 <i class="fas fa-history me-2"></i>
                 Historial de Partidas
               </button>
             </div>
-          </div>
-          
-          <!-- Estadísticas del jugador -->
-          <div class="row mt-4 g-3">
-            <div class="col-md-6">
-              <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
-                <div class="card-body">
-                  <i class="fas fa-trophy mb-3"></i>
-                  <h5>Victorias</h5>
-                  <p class="mb-0 display-6">
-                    <span *ngIf="loading">
-                      <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                    <span *ngIf="!loading">{{playerStats.victories}}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card border-0 bg-transparent text-white" style="backdrop-filter: blur(5px); background: rgba(255, 255, 255, 0.05);">
-                <div class="card-body">
-                  <i class="fas fa-gamepad mb-3"></i>
-                  <h5>Partidas</h5>
-                  <p class="mb-0 display-6">
-                    <span *ngIf="loading">
-                      <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                    <span *ngIf="!loading">{{playerStats.totalGames}}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-   
+
           </div>
         </div>
+
+        <!-- Estadísticas del jugador -->
+        <div class="row mt-4 g-3">
+          <div class="col-6">
+            <div class="card stat-card text-white text-center">
+              <div class="card-body">
+                <i class="fas fa-trophy mb-2 fs-3"></i>
+                <h6>Victorias</h6>
+                <p class="display-6 mb-0">
+                  <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                  <span *ngIf="!loading">{{playerStats.victories}}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="card stat-card text-white text-center">
+              <div class="card-body">
+                <i class="fas fa-gamepad mb-2 fs-3"></i>
+                <h6>Partidas</h6>
+                <p class="display-6 mb-0">
+                  <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                  <span *ngIf="!loading">{{playerStats.totalGames}}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
