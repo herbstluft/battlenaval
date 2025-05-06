@@ -10,6 +10,7 @@ use App\Events\MyEvent;
 use App\Events\ReadCreated;
 use App\Events\ReadChangeTurn;
 use App\Events\GameOver;
+use App\Events\UpdatedListGames;
 use App\Models\Winner;
 use App\Models\Attack;
 
@@ -89,6 +90,8 @@ public function join(Game $game)
         return response()->json(['message' => 'No puedes unirte a esta partida'], 403);
     }
 
+    event(new UpdatedListGames("Actualizar"));
+
     // Check if user is already part of this game
     if ($currentUser === $game->player1_id || $currentUser === $game->player2_id) {
         // Load the game state and return it
@@ -128,7 +131,7 @@ public function join(Game $game)
         $game->load(['player1', 'player2']);
         
         event(new MyEvent($game));
-        
+
         return response()->json([
             'message' => 'Te has unido a la partida',
             'status' => 'joined',

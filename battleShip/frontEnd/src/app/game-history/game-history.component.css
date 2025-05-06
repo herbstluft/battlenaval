@@ -146,3 +146,46 @@
   border: 1px solid rgba(220, 53, 69, 0.3);
   color: #dc3545;
 }
+
+/* Fondo oscuro con bordes sutiles */
+.table-dark {
+  background-color: #343a40;
+  border: 1px solid #454d55;
+}
+
+/* Efecto de hover con transición suave */
+.table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+/* Filas alternadas con sombreado */
+.table-striped tbody tr:nth-child(odd) {
+  background-color: #3a4349;
+}
+
+/* Bordes suaves y redondeados */
+.table-bordered th, .table-bordered td {
+  border: 1px solid #555;
+  border-radius: 8px;
+}
+
+/* Estilo de las celdas de estado y resultado */
+.badge {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 12px;
+}
+
+/* Botón de detalles con estilo moderno */
+.btn-outline-light {
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  background-color: transparent;
+  transition: background-color 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background-color: #ffffff;
+  color: #343a40;
+}

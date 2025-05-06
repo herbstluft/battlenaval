@@ -1,3 +1,5 @@
+<app-navbar></app-navbar>
+
 <div class="container-fluid min-vh-100 py-5" style="background: linear-gradient(135deg, #1a2a6c, #2a4858, #141E30)">
   <div class="container">
     <!-- Loading State -->
@@ -73,7 +75,7 @@
               <i class="fas fa-user-circle text-info me-2"></i>
               <span class="player-name">{{ game.player1.name }}</span>
             </div>
-            <button (click)="joinGame(game.id)" class="btn custom-btn-join">
+            <button (click)="joinGame(game.id)" class="btn custom-btn-join" *ngIf="myActiveGames.length === 0">
               <i class="fas fa-sign-in-alt me-2"></i>
               Unirse
             </button>

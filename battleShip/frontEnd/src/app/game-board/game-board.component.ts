@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { PusherService } from '../pusher.service';
 import { Subscription } from 'rxjs';
+import { NavbarComponent } from '../navbar/navbar.component';
 import { Router } from '@angular/router';
 
 
@@ -17,7 +18,7 @@ interface Cell {
 @Component({
   selector: 'app-game-board',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NavbarComponent],
   templateUrl: './game-board.component.html',
   styleUrls: ['./game-board.component.css']
 })
@@ -311,6 +312,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       .subscribeToChannel('game-channel', 'game.changeTurn')
       .subscribe(
         (data: any) => {
+          this.fetchGameState();
           console.log('Evento changeTurn recibido:', data);
           
           if (data.game.id === this.gameId) {
@@ -319,9 +321,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
               ...data.game,
               current_turn: data.game.current_turn
             });
-
-            this.fetchGameState();
-
           }
         },
         error => {

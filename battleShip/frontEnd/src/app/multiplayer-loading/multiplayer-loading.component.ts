@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CommonModule } from '@angular/common';
-
+import { NavbarComponent } from '../navbar/navbar.component';
 import { PusherService } from '../pusher.service';
 
 interface Cell {
@@ -18,11 +18,13 @@ interface Cell {
   templateUrl: './multiplayer-loading.component.html',
   styleUrls: ['./multiplayer-loading.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, NavbarComponent]
 })
 export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
   private gameCreatedSubscription: Subscription = new Subscription();
   private gameJoinedSubscription: Subscription = new Subscription();
+  private gameUpdatedSubscription: Subscription = new Subscription();
+
   private pollSubscription: Subscription | null = null;
 
   availableGames: any[] = [];
@@ -44,13 +46,15 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.subscribeToGameCreatedEvents(); // En caso quieras refrescar la lista luego de unirse
+    this.subscribeToGameCreatedEvents();
+    this.subscribeToGameUpdatedEvents(); // Add this line
     this.loadAvailableGames();
   }
 
   ngOnDestroy() {
     this.gameCreatedSubscription?.unsubscribe();
     this.gameJoinedSubscription?.unsubscribe();
+    this.gameUpdatedSubscription?.unsubscribe(); // Add this line
     this.pollSubscription?.unsubscribe();
   }
 
@@ -88,11 +92,33 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.availableGames = response.available_games || [];
         this.myActiveGames = response.my_games || [];
+
+        console.log(this.myActiveGames.length);
         this.loading = false;
       },
       error: (err) => {
         this.error = 'Error al cargar las partidas disponibles';
         this.loading = false;
+        console.error('Error loading games:', err);
+      }
+    });
+  }
+  loadAvailableGamesWithoutLoading() {
+    this.error = '';
+    const token = localStorage.getItem('token');
+
+    this.http.get<any>(`${environment.apiUrl}/games/available`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).subscribe({
+      next: (response) => {
+        this.availableGames = response.available_games || [];
+        this.myActiveGames = response.my_games || [];
+
+        console.log(this.myActiveGames.length);
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Error al cargar las partidas disponibles';
         console.error('Error loading games:', err);
       }
     });
@@ -188,7 +214,6 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
       .subscribe(
         data => {
           if (data?.game) {
-            this.availableGames = this.availableGames.filter(game => game.id !== data.game.id);
             if (this.currentGameId === data.game.id) {
               this.router.navigate(['/game', data.game.id]);
             }
@@ -200,4 +225,21 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
         }
       );
   }
+
+
+  private subscribeToGameUpdatedEvents() {
+    this.gameUpdatedSubscription = this.pusherService
+      .subscribeToChannel('game-channel', 'game.updated')
+      .subscribe(
+        data => {
+          this.loadAvailableGamesWithoutLoading();
+        },
+        error => {
+          console.error('Error in game update subscription:', error);
+          this.error = 'Error updating game list';
+        }
+      );
+  }
+
+
 }
