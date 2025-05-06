@@ -28,8 +28,8 @@ interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class ApiService {
-  public apiUrl = 'http://192.168.100.11:8000/api';
-  public webUrl = 'http://192.168.100.11:8000/';
+  public apiUrl = 'http://192.168.1.8:8000/api';
+  public webUrl = 'http://192.168.1.8:8000/';
 
 
   constructor(private http: HttpClient) {}

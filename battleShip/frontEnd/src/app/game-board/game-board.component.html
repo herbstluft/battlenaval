@@ -97,7 +97,10 @@
    
     
   <h2>Tablero del Oponente</h2>
-  <div class="board">
+  <div class="board" [ngClass]="{
+    'my-turn-border': currentTurn === 'me',
+    'opponent-turn-border': currentTurn !== 'me'
+  }">
     <div *ngFor="let row of opponentBoard; let i = index" class="row">
       <div *ngFor="let cell of row; let j = index" class="cell"
            [ngClass]="{

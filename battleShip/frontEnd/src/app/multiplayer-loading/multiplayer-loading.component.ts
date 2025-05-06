@@ -189,6 +189,24 @@ export class MultiplayerLoadingComponent implements OnInit, OnDestroy {
     });
   }
 
+  cancelGame() {
+    if (!this.currentGameId) return;
+    
+    const token = localStorage.getItem('token');
+    this.http.delete<any>(`${environment.apiUrl}/games/${this.currentGameId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).subscribe({
+      next: () => {
+        this.currentGameId = null;
+        this.waitingForPlayer = false;
+        this.loadAvailableGames();
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Error al cancelar la partida';
+      }
+    });
+  }
+
   private subscribeToGameCreatedEvents() {
     this.gameCreatedSubscription?.unsubscribe();
     this.gameCreatedSubscription = this.pusherService

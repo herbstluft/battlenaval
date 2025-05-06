@@ -580,6 +580,32 @@ public function checkUserActiveGame(Request $request)
     ]);
 }
 
+public function cancelGame($id)
+{
+    $game = Game::findOrFail($id);
+    $userId = Auth::id();
+
+    // Verificar que el usuario sea el creador de la partida y que esté en estado de espera
+    if ($game->player1_id !== $userId || $game->status !== 'waiting') {
+        return response()->json([
+            'message' => 'No tienes permiso para cancelar esta partida'
+        ], 403);
+    }
+
+    try {
+        $game->delete();
+        event(new UpdatedListGames("Actualizar"));
+        
+        return response()->json([
+            'message' => 'Partida cancelada exitosamente'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error al cancelar la partida',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 }
 

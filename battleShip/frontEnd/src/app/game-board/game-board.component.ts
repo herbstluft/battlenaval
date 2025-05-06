@@ -119,27 +119,28 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }
     return board;
   }
-
-  // Modify the attackCell method
+  private isAttacking: boolean = false; // Add this property
+  
+  // Modify attackCell method
   attackCell(index: number): void {
-
-
-    console.log(index);
-    if (this.currentTurn !== 'me' || this.isGameOver) {
+    // Add validation for ongoing attack
+    if (this.currentTurn !== 'me' || this.isGameOver || this.isAttacking) {
       return;
     }
-  
-    // Calculate row and column from index
+
     const row = Math.floor(index / this.boardSize);
     const col = index % this.boardSize;
-  
+
     if (this.opponentBoard[row][col].isHit || this.opponentBoard[row][col].isMiss) {
       this.message = 'Ya atacaste esta celda';
       return;
     }
-  
+
+    // Set attacking flag
+    this.isAttacking = true;
+
     this.http.post<any>(`${environment.apiUrl}/games/${this.gameId}/attack`, {
-      index: index,  // Send the index instead of row/col
+      index: index,
       col: col,
       row: row,
       isHit: this.opponentBoard[row][col].hasShip,
@@ -149,39 +150,33 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       headers: { Authorization: `Bearer ${this.token}` }
     }).subscribe({
       next: (response) => {
-        
         const hasShip = this.opponentBoard[row][col].hasShip;
         
         if (hasShip) {
           this.message = '¡Le diste a un barco! 🎯';
-
-          setTimeout(() => {
-            this.message = '';
-          }, 5000); 
-
           this.opponentBoard[row][col].isHit = true;
           this.opponentBoard[row][col].hasShip = true;
           this.gameStats.hits++;
-
-          this.triggerHitAnimation(); // <- Aquí se activa la animación
-
+          this.triggerHitAnimation();
         } else {
           this.message = 'Agua... 💦';
-          setTimeout(() => {
-            this.message = '';
-          }, 5000); 
-
           this.opponentBoard[row][col].isMiss = true;
           this.gameStats.misses++;
         }
-  
+
+        setTimeout(() => {
+          this.message = '';
+        }, 5000);
+
         this.gameStats.totalShots++;
         this.checkGameOver();
         this.fetchGameState();
+        this.isAttacking = false; // Reset attacking flag
       },
       error: (err) => {
         console.error('Error al atacar:', err);
         this.message = err.error?.message || 'Error en el ataque';
+        this.isAttacking = false; // Reset attacking flag on error
       }
     });
   }

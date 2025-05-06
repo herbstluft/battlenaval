@@ -38,7 +38,7 @@ class ActivationMail extends Mailable
 
     $signedUrl = URL::temporarySignedRoute(
         'verify.account',
-        now(5)->addMinutes(1),
+        now()->addMinutes(5),
         ['code' => $this->user->activation_code]
     );
     

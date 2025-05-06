@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     Route::middleware('auth:sanctum')->get('/games-history', [GameController::class, 'getGameHistory']);
     Route::middleware('auth:sanctum')->get('/games/{id}/details', [GameController::class, 'getGameDetails']);
     Route::middleware('auth:sanctum')->get('/user/stats', [GameController::class, 'getUserStats']);
+    Route::middleware('auth:sanctum')->delete('/games/{id}', [GameController::class, 'cancelGame']);
 
 
     

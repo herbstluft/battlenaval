@@ -337,6 +337,17 @@ h2 {
 
 
 
+.my-turn-border {
+  border: 4px solid #2ecc71;
+  box-shadow: 0 0 15px #2ecc71;
+  transition: all 0.3s ease;
+}
+
+.opponent-turn-border {
+  border: 4px solid #e74c3c;
+  box-shadow: 0 0 15px #e74c3c;
+  transition: all 0.3s ease;
+}
 
 .hit-animation-overlay {
   position: fixed;
