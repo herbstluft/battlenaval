@@ -114,4 +114,10 @@ export class ApiService {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
   }
+
+  getCurrentUser() {
+    return this.http.get<any>(`${this.apiUrl}/user`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+  }
 }
