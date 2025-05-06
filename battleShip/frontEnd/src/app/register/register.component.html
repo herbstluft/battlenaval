@@ -77,9 +77,54 @@
         </div>
       </div>
 
-      <button type="submit" class="login-button" [disabled]="!registerForm.valid">
-        <span>Registrarse</span>
-        <i class="bi bi-arrow-right"></i>
+      <!-- Add this CSS in the head section or your component's CSS file -->
+      <style>
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-left: 8px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      .wave-text {
+        display: inline-block;
+        animation: wave 1.5s infinite;
+        animation-delay: calc(.1s * var(--i));
+      }
+      
+      @keyframes wave {
+        0%, 40%, 100% { transform: translateY(0); }
+        20% { transform: translateY(-10px); }
+      }
+      </style>
+      
+      <!-- Replace the existing submit button with this -->
+      <button type="submit" class="login-button" [disabled]="isLoading">
+        <div *ngIf="!isLoading">
+          <span>Registrarse</span>
+          <i class="bi bi-arrow-right"></i>
+        </div>
+        <div *ngIf="isLoading" class="d-flex align-items-center justify-content-center">
+          <span>
+            <span class="wave-text" style="--i: 1">E</span>
+            <span class="wave-text" style="--i: 2">n</span>
+            <span class="wave-text" style="--i: 3">v</span>
+            <span class="wave-text" style="--i: 4">i</span>
+            <span class="wave-text" style="--i: 5">a</span>
+            <span class="wave-text" style="--i: 6">n</span>
+            <span class="wave-text" style="--i: 7">d</span>
+            <span class="wave-text" style="--i: 8">o</span>
+          </span>
+          <div class="loading-spinner"></div>
+        </div>
       </button>
 
       <div class="additional-options">

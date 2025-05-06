@@ -20,6 +20,7 @@ export class RegisterComponent {
   password_confirmation: string = '';
   successMessage: string = '';
   errorMessage: string | null = null;
+  isLoading: boolean = false;
 
 
   constructor(private apiService: ApiService, private router: Router) {}
@@ -29,6 +30,7 @@ export class RegisterComponent {
     this.router.navigate(['/login']);
   }
   onSubmit() {
+    this.isLoading = true; // Set loading to true when starting
     const usuario = {
       name: this.name,
       email: this.email,
@@ -36,11 +38,11 @@ export class RegisterComponent {
       password_confirmation: this.password_confirmation
     };
 
-
     this.apiService.registerUser(usuario).subscribe(
       (response: any) => {
         this.clear();
-        this.successMessage = response.message; 
+        this.successMessage = response.message;
+        this.isLoading = false; // Reset loading state on success
       },
       (error) => {
         // Verificar si hay detalles de errores dentro de `error.error.errors`
@@ -58,6 +60,7 @@ export class RegisterComponent {
           // Si no existen errores específicos, mostrar el mensaje general
           this.errorMessage = error.error ? error.error.message : 'Error al registrar el usuario';
         }
+        this.isLoading = false; // Reset loading state on error
       }
     );
   }

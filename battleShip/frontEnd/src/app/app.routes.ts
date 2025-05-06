@@ -18,7 +18,6 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'game/:id', component: GameBoardComponent },
   { path: 'multiplayer-loading', component: MultiplayerLoadingComponent },
-  // Add this to your routes array
   {
     path: 'game-history',
     loadComponent: () => import('./game-history/game-history.component')
